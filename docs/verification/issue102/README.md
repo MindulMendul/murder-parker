@@ -21,14 +21,16 @@
 
 `browser.cjs`는 테스트 서버 `http://127.0.0.1:3212`와 전용 `/tmp/ready-102.sqlite` DB, 사전 설치된 Playwright/Chromium을 사용했습니다. QA/main 승격·배포·운영 데이터 접근은 없습니다.
 
+브라우저 스크립트는 게스트 계정과 방을 만듭니다. 직접 실행할 때는 `DATABASE_PATH=:memory:`로 본인이 시작한 로컬 테스트 서버만 사용하세요. 스크립트는 정확한 loopback origin만 허용하며 `DISPOSABLE_TEST_SERVER=1` 확인 값이 없으면 브라우저나 API 요청을 시작하지 않습니다. 종료 후 서버를 멈추면 in-memory DB도 사라집니다.
+
 ## 다른 환경에서 재현
 
 Playwright를 설치하고 Chromium을 준비한 뒤 아래처럼 실행합니다. Playwright 기본 브라우저를 사용하면 `CHROMIUM_PATH`를 생략할 수 있습니다. 시스템의 절대 경로는 환경 변수로만 전달하며 스크립트에 고정하지 않습니다. `RESULTS_DIR` 기본값은 스크립트 디렉터리입니다.
 
 ```sh
-PORT=3212 DATABASE_PATH=/tmp/issue102-test.sqlite bun apps/server/src/index.ts
+PORT=3212 DATABASE_PATH=:memory: bun apps/server/src/index.ts
 # 다른 터미널; 먼저 bun run build 실행 필요
-BASE_URL=http://127.0.0.1:3212 PLAYWRIGHT_MODULE=playwright CHROMIUM_PATH=/path/to/chromium RESULTS_DIR=/tmp/issue102-results node docs/verification/issue102/browser.cjs
+DISPOSABLE_TEST_SERVER=1 BASE_URL=http://127.0.0.1:3212 PLAYWRIGHT_MODULE=playwright CHROMIUM_PATH=/path/to/chromium RESULTS_DIR=/tmp/issue102-results node docs/verification/issue102/browser.cjs
 ```
 
 브라우저 스크립트는 빈 테스트 DB에서 게스트를 만들고 종료 전 방에서 퇴장합니다. 기존 네 작품의 카탈로그를 사용하므로 별도 데이터 시드는 필요 없습니다. 평가 표시 분기와 긴 텍스트 검증은 브라우저 응답만 대체합니다.

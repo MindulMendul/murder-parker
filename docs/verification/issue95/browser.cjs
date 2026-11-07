@@ -1,10 +1,12 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
+const { assertDisposableTestTarget } = require('../test-target-guard.cjs');
 
 const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:3215';
 const browserArgs = process.env.CHROMIUM_NO_SANDBOX === '1' ? ['--no-sandbox'] : [];
 
 (async () => {
+  assertDisposableTestTarget(baseUrl);
   const browser = await chromium.launch({
     ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}),
     headless: true,

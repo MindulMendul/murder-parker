@@ -10,9 +10,10 @@ The list uses the same `joinError` rule as room admission: a room must still be 
 
 ## Reproduce the browser check
 
-Build the web app, start a server with a clean test database, and run the Playwright script in a second terminal. The browser script creates three guest sessions, exercises room listing and joining through HTTP/WebSocket, and closes all browser contexts on completion.
+Build the web app, start your own server with `DATABASE_PATH=:memory:`, and run the Playwright script in a second terminal. The browser script creates three guest sessions, exercises room listing and joining through HTTP/WebSocket, and closes all browser contexts on completion. The in-memory database exists only in that server process.
+The script refuses non-loopback `BASE_URL` values and requires `DISPOSABLE_TEST_SERVER=1`; it does not clean up data from any other server. Stop your test server after the check to discard its database.
 
 ```sh
-PORT=33715 DATABASE_PATH=/tmp/issue95-browser.sqlite APP_ORIGIN=http://127.0.0.1:33715 bun apps/server/src/index.ts
-BASE_URL=http://127.0.0.1:33715 PLAYWRIGHT_MODULE=playwright CHROMIUM_PATH=/usr/bin/chromium CHROMIUM_NO_SANDBOX=1 node docs/verification/issue95/browser.cjs
+PORT=33715 DATABASE_PATH=:memory: APP_ORIGIN=http://127.0.0.1:33715 bun apps/server/src/index.ts
+DISPOSABLE_TEST_SERVER=1 BASE_URL=http://127.0.0.1:33715 PLAYWRIGHT_MODULE=playwright CHROMIUM_PATH=/usr/bin/chromium CHROMIUM_NO_SANDBOX=1 node docs/verification/issue95/browser.cjs
 ```

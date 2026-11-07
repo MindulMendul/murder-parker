@@ -2,6 +2,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { assertDisposableTestTarget } = require('../test-target-guard.cjs');
 
 const baseUrl = (process.env.BASE_URL || 'http://127.0.0.1:3183').replace(/\/$/, '');
 const resultsPath = process.env.RESULTS_PATH || 'docs/verification/issue98/browser-results.json';
@@ -94,6 +95,7 @@ async function checkSettings(browser, locale, width, deleteAccount) {
 }
 
 async function main() {
+  assertDisposableTestTarget(baseUrl);
   fs.mkdirSync(imagePath, { recursive: true });
   const browser = await chromium.launch(launchOptions);
   try {

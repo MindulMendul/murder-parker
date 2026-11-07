@@ -2,6 +2,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { assertDisposableTestTarget } = require('../test-target-guard.cjs');
 
 const baseUrl = (process.env.BASE_URL || 'http://127.0.0.1:3210').replace(/\/$/, '');
 const resultsPath = process.env.RESULTS_PATH || '.codex-results/issue110-browser';
@@ -146,6 +147,7 @@ async function checkInviteJoin(browser) {
 }
 
 async function main() {
+  assertDisposableTestTarget(baseUrl);
   fs.mkdirSync(resultsPath, { recursive: true });
   const browser = await chromium.launch({ executablePath, headless: true });
   try {

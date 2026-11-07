@@ -2,8 +2,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { assertDisposableTestTarget } = require('../test-target-guard.cjs');
 const base = (process.env.BASE_URL || 'http://127.0.0.1:3212').replace(/\/$/, '');
 const resultsDir = process.env.RESULTS_DIR || __dirname;
+assertDisposableTestTarget(base);
 fs.mkdirSync(resultsDir, { recursive: true });
 (async () => {
   const browser = await chromium.launch({ ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}), headless: true, args: ['--no-sandbox'] });

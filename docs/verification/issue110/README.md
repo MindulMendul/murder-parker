@@ -22,18 +22,18 @@
 ```sh
 bun install --frozen-lockfile --ignore-scripts
 bun run build
-task_dir=$(mktemp -d)
-PORT=3210 DATABASE_PATH="$task_dir/festival.sqlite" bun apps/server/src/index.ts
+PORT=3210 DATABASE_PATH=:memory: bun apps/server/src/index.ts
 ```
 
 다른 터미널에서 Playwright와 Chromium을 설치한 경로를 지정해 실행합니다. `playwright`가 일반 모듈 경로에 설치돼 있으면 `PLAYWRIGHT_MODULE`은 생략할 수 있습니다. Chromium 기본 Playwright 설치를 쓰면 `CHROMIUM_PATH`도 생략할 수 있습니다.
 
 ```sh
 BASE_URL=http://127.0.0.1:3210 \
+DISPOSABLE_TEST_SERVER=1 \
 PLAYWRIGHT_MODULE=/absolute/path/to/node_modules/playwright \
 CHROMIUM_PATH=/absolute/path/to/chromium \
 RESULTS_PATH=.codex-results/issue110-browser \
 node docs/verification/issue110/browser.cjs
 ```
 
-`BASE_URL`은 테스트 전용 서버를 가리켜야 합니다. 스크립트는 실제 게스트 계정과 방을 생성하고 종료합니다. `RESULTS_PATH`에 화면과 JSON 결과를 저장하며 기본값은 `.codex-results/issue110-browser`입니다. 테스트 후 서버를 중지하고 임시 DB 디렉터리를 정리합니다. QA/main 승격·운영 배포는 수행하지 않았습니다.
+`BASE_URL`은 본인이 `DATABASE_PATH=:memory:`로 시작한 테스트 전용 서버를 가리켜야 합니다. 스크립트는 정확한 loopback origin과 `DISPOSABLE_TEST_SERVER=1`을 확인하기 전에는 Chromium이나 API 요청을 시작하지 않으며, 실제 게스트 계정과 방을 만듭니다. `RESULTS_PATH`에 화면과 JSON 결과를 저장하며 기본값은 `.codex-results/issue110-browser`입니다. 테스트 후 서버를 중지하면 in-memory DB가 사라집니다. QA/main 승격·운영 배포는 수행하지 않았습니다.
