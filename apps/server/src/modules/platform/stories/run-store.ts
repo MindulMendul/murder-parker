@@ -1,7 +1,10 @@
+import type { StoryPackage } from "@festival/shared";
 export type StoryRun = {
   id: string;
   storyId: string;
   storyVersion: number;
+  /** Private immutable source for a started play, including unpublished/deleted revisions. */
+  storyPackage?: StoryPackage;
   currentSceneId: string;
   startedAt: string;
   lastActiveAt: string;

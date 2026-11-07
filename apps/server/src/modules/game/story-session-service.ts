@@ -2,6 +2,8 @@ import type { StoryPackage } from "@festival/shared";
 import type { StoryRun, StoryRunStore } from "../platform/stories/run-store";
 import type { StoryCatalog } from "../platform/stories/ports/story-catalog";
 
+import { soloStoryView, supportsSoloStory } from "./solo-story";
+
 export class StorySessionService {
   constructor(
     private readonly catalog: StoryCatalog,
@@ -15,6 +17,7 @@ export class StorySessionService {
       id: crypto.randomUUID(),
       storyId,
       storyVersion: story.story.version,
+      storyPackage: structuredClone(story),
       currentSceneId: story.story.startSceneId,
       startedAt: now,
       lastActiveAt: now,
@@ -24,18 +27,18 @@ export class StorySessionService {
     };
     this.runs.create(run);
     this.record(run, "play_started");
-    return { runId: run.id, ...this.sceneView(run, story) };
+    return { runId: run.id, package: soloStoryView(story), ...this.sceneView(run, story) };
   }
 
   current(runId: string) {
     const run = this.needActiveRun(runId);
-    const story = this.needSoloStory(run.storyId, run.storyVersion);
+    const story = run.storyPackage ?? this.needSoloStory(run.storyId, run.storyVersion);
     return { runId: run.id, ...this.sceneView(run, story) };
   }
 
   advance(runId: string) {
     const run = this.needActiveRun(runId);
-    const story = this.needSoloStory(run.storyId, run.storyVersion);
+    const story = run.storyPackage ?? this.needSoloStory(run.storyId, run.storyVersion);
     const current = story.content.scenes.find((scene) => scene.id === run.currentSceneId);
     if (!current?.nextSceneId) throw new Error("이 장면에서 자동으로 진행할 수 없어.");
     // Resolution cues are returned only by a successful server-side accusation.
@@ -54,7 +57,7 @@ export class StorySessionService {
 
   inspectEvidence(runId: string, evidenceId: string) {
     const run = this.needActiveRun(runId);
-    const story = this.needSoloStory(run.storyId, run.storyVersion);
+    const story = run.storyPackage ?? this.needSoloStory(run.storyId, run.storyVersion);
     if (story.content.mechanics.type !== "solo-investigation")
       throw new Error("이 작품은 현장 조사 방식이 아니야.");
     if (run.currentSceneId !== "investigation")
@@ -72,7 +75,7 @@ export class StorySessionService {
 
   accuse(runId: string, suspectId: string, evidenceIds: string[]) {
     const run = this.needActiveRun(runId);
-    const story = this.needSoloStory(run.storyId, run.storyVersion);
+    const story = run.storyPackage ?? this.needSoloStory(run.storyId, run.storyVersion);
     if (story.content.mechanics.type !== "solo-investigation")
       throw new Error("이 작품은 추리 고발 방식이 아니야.");
     if (run.currentSceneId !== "investigation")
@@ -164,7 +167,7 @@ export class StorySessionService {
 
   private needSoloStory(id: string, version?: number) {
     const story = this.catalog.get(id, version);
-    if (!story || story.story.mode !== "solo") throw new Error("단독 플레이 스토리를 찾을 수 없어.");
+    if (!story || !supportsSoloStory(story)) throw new Error("단독 플레이 스토리를 찾을 수 없어.");
     return story;
   }
 

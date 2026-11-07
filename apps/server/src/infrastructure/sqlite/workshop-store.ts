@@ -1,5 +1,5 @@
 import type { Database } from "bun:sqlite";
-import type { Guest, StoryPackage } from "@festival/shared";
+import { storyPackageSchema, type Guest, type StoryPackage } from "@festival/shared";
 import type { WorkshopDraftInput, WorkshopStory } from "../../modules/workshop/model";
 
 type DraftRow = {
@@ -132,6 +132,17 @@ export class SQLiteWorkshopStore {
       "SELECT package_json FROM workshop_drafts WHERE id=? AND owner_id=?",
     ).get(id, ownerId) as { package_json: string } | null;
     return row ? JSON.parse(row.package_json) as StoryPackage : undefined;
+  }
+
+  /** Server-only source lookup; public API routes must never serialize this package. */
+  playableSource(id: string): StoryPackage | undefined {
+    const row = this.db.query("SELECT package_json FROM workshop_drafts WHERE id=? AND published=1")
+      .get(id) as { package_json: string } | null;
+    if (!row) return undefined;
+    try {
+      const parsed = storyPackageSchema.safeParse(JSON.parse(row.package_json));
+      return parsed.success ? { ...parsed.data, story: { ...parsed.data.story, id } } : undefined;
+    } catch { return undefined; }
   }
 
   create(owner: Guest, draft: WorkshopDraftInput): WorkshopStory {

@@ -1,0 +1,45 @@
+{
+  "desktop": {
+    "width": 1280,
+    "playFromPublicCard": true,
+    "pinnedDuringEditAndUnpublish": true,
+    "newPlayOfPrivateRejected": true,
+    "investigation": true,
+    "completed": true,
+    "rating": true,
+    "canonicalMetrics": true
+  },
+  "mobile": {
+    "width": 320,
+    "locale": "en",
+    "updatedVersionOpening": true,
+    "investigation": true,
+    "noOverflow": true
+  },
+  "privateFieldsAbsent": true,
+  "unsupportedFormatExplainedInBrowser": true,
+  "failedReplayRetainsRating": true,
+  "backForwardRefreshSelection": true,
+  "roomMembershipUrlGuard": true,
+  "pageErrors": [],
+  "emptyOpeningRegression": [
+    {
+      "locale": "ko",
+      "width": 1440,
+      "emptyCueMessage": true,
+      "canBeginInvestigation": true,
+      "reachedSuspects": true,
+      "noOverflow": true,
+      "pageErrors": []
+    },
+    {
+      "locale": "en",
+      "width": 375,
+      "emptyCueMessage": true,
+      "canBeginInvestigation": true,
+      "reachedSuspects": true,
+      "noOverflow": true,
+      "pageErrors": []
+    }
+  ]
+}

@@ -2,8 +2,8 @@
   import { Modal, Button, Select, TextInput, FilterBar, StateMessage } from "../../../shared/ui";
   import { onDestroy, tick, untrack } from 'svelte';
   import { workshopRequest, type WorkshopStory } from '../model/_story';
-  let { locale, loggedIn = false, onLogin, onEdit }: {
-    locale: 'ko' | 'en'; loggedIn?: boolean; onLogin: (resume?: () => void) => void; onEdit: (id?: string) => void;
+  let { locale, loggedIn = false, onLogin, onEdit, onPlay }: {
+    locale: 'ko' | 'en'; loggedIn?: boolean; onLogin: (resume?: () => void) => void; onEdit: (id?: string) => void; onPlay: (id: string) => void;
   } = $props();
   const label = (ko: string, en: string) => locale === 'en' ? en : ko;
   let stories = $state<WorkshopStory[]>([]), total = $state(0), offset = $state(0);
@@ -135,7 +135,7 @@
   {/if}
 </main>
 <Modal bind:element={dialog} class="story-dialog" labelledby="story-dialog-title" onClose={() => selected = null}>
-  {#if selected}<div class="dialog-content"><p class="eyebrow">STORY DETAILS</p><h2 id="story-dialog-title" class="heading-two">{selected.title}</h2><p class="muted">{selected.subtitle}</p><p>{label('만든 이', 'Creator')}: {selected.author.name}</p><p>{label('난이도', 'Difficulty')}: {difficultyLabel(selected.difficulty)}</p><p>★ {selected.averageRating?.toFixed(1) ?? label('평가 전', 'Unrated')} · {selected.playCount} {label('플레이', 'plays')} · ♡ {selected.favoriteCount}</p><p class="muted">{selected.playerCount.min}–{selected.playerCount.max} {label('명', 'players')} · {selected.estimatedMinutes} {label('분', 'min')}</p><div class="card-actions"><Button class="primary" onclick={() => dialog.close()} variant="primary">{label('닫기', 'Close')}</Button>{#if selected.canEdit}<Button class="secondary" onclick={() => { const id = selected!.id; dialog.close(); edit(id); }} variant="secondary">{label('수정하기', 'Edit')}</Button>{/if}</div></div>{/if}
+  {#if selected}<div class="dialog-content"><p class="eyebrow">STORY DETAILS</p><h2 id="story-dialog-title" class="heading-two">{selected.title}</h2><p class="muted">{selected.subtitle}</p><p>{label('만든 이', 'Creator')}: {selected.author.name}</p><p>{label('난이도', 'Difficulty')}: {difficultyLabel(selected.difficulty)}</p><p>★ {selected.averageRating?.toFixed(1) ?? label('평가 전', 'Unrated')} · {selected.playCount} {label('플레이', 'plays')} · ♡ {selected.favoriteCount}</p><p class="muted">{selected.playerCount.min}–{selected.playerCount.max} {label('명', 'players')} · {selected.estimatedMinutes} {label('분', 'min')}</p><p class="muted">{selected.published && selected.mode === 'solo' ? label('공개된 1인 추리 작품을 플레이할 수 있어요. 지원하지 않는 진행 방식은 시작 전에 안내합니다.', 'Play a published solo investigation. Unsupported story formats are checked before play starts.') : label('공개된 1인 추리 작품만 플레이할 수 있어요.', 'Only published solo investigations can be played.')}</p><div class="card-actions">{#if selected.published && selected.mode === 'solo'}<Button variant="primary" class="primary" onclick={() => { const id = selected!.id; dialog.close(); onPlay(id); }}>{label('플레이하기', 'Play story')} →</Button>{/if}<Button class="secondary" onclick={() => dialog.close()} variant="primary">{label('닫기', 'Close')}</Button>{#if selected.canEdit}<Button class="secondary" onclick={() => { const id = selected!.id; dialog.close(); edit(id); }} variant="secondary">{label('수정하기', 'Edit')}</Button>{/if}</div></div>{/if}
 </Modal>
 <style>
 .workshop {

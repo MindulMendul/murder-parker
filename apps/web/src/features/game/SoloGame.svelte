@@ -13,10 +13,10 @@
   /** @param {Parameters<typeof translate>[1]} key */
   const t = (key) => translate(locale, key);
 
-  let storyPackage = $state(/** @type {import('@festival/shared').StoryPackage | null} */ (null));
+  let storyPackage = $state(/** @type {import('@festival/shared').SoloStoryView | null} */ (null));
   let storyLoadError = $state('');
   let mechanics = $derived(
-    storyPackage?.content.mechanics.type === 'solo-investigation'
+    storyPackage?.content?.mechanics.type === 'solo-investigation'
       ? storyPackage.content.mechanics
       : null,
   );
@@ -24,12 +24,12 @@
   let evidence = $derived(Object.fromEntries((mechanics?.evidence ?? []).map((item) => [item.id, item])));
   let rooms = $derived((mechanics?.locations ?? []).map((location) => ({ ...location, evidence: location.evidenceIds })));
   let alibis = $derived(Object.fromEntries((mechanics?.alibis ?? []).map(({ suspectId, statements }) => [suspectId, statements])));
-  /** @type {Record<string, Record<string, [string, boolean?]>>} */
+  /** @type {Record<string, Record<string, [string]>>} */
   let reactions = $derived((mechanics?.reactions ?? []).reduce((bySuspect, item) => {
     bySuspect[item.suspectId] ??= {};
-    bySuspect[item.suspectId][item.evidenceId] = [item.lines.join('\n'), item.revealsTruth];
+    bySuspect[item.suspectId][item.evidenceId] = [item.lines.join('\n')];
     return bySuspect;
-  }, /** @type {Record<string, Record<string, [string, boolean?]>>} */ ({})));
+  }, /** @type {Record<string, Record<string, [string]>>} */ ({})));
   /** @type {import('@festival/shared').StoryCue[]} */
   let openingCues = $state([]);
   /** @type {import('@festival/shared').StoryCue[]} */
@@ -77,8 +77,9 @@
     }).catch(() => {});
     void fetch(`/api/game/stories/${encodeURIComponent(storyId)}`)
       .then(async (response) => {
-        if (!response.ok) throw new Error('스토리를 불러오지 못했어.');
-        storyPackage = await response.json();
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error ?? '스토리를 불러오지 못했어.');
+        storyPackage = data;
       })
       .catch((error) => {
         storyLoadError = error instanceof Error ? error.message : '스토리를 불러오지 못했어.';
@@ -114,9 +115,7 @@
 
   async function startOver() {
     if (!storyPackage) return;
-    runId = '';
     storyLoadError = '';
-    resolutionCues = [];
     try {
       const response = await fetch('/api/game/sessions', {
         method: 'POST',
@@ -125,14 +124,16 @@
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? '플레이를 시작하지 못했어.');
+      storyPackage = data.package;
       runId = data.runId;
+      resolutionCues = [];
       openingCues = data.scene.cues;
       startedAt = Date.parse(data.progress.startedAt);
     } catch (error) {
       storyLoadError = error instanceof Error ? error.message : '플레이를 시작하지 못했어.';
       return;
     }
-    trackEvent('story_start', { story_id: storyPackage.story.id, language: locale });
+    trackEvent('story_start', { story_id: storyPackage?.story.id ?? storyId, language: locale });
     phase = 'intro';
     roomId = '';
     found = [];
@@ -259,7 +260,7 @@
     <p class="eyebrow">A CASE FOR ONE DETECTIVE</p>
     <div class="mb-7 border-y border-festival-line py-8">
       <span class="text-5xl text-festival-gold" aria-hidden="true">✳</span>
-      <p class="my-4 text-[11px] tracking-[3px] text-festival-muted">{locale === 'en' ? 'DEOKIL TRADING · 23:00' : '덕일상사 · 23:00'}</p>
+      <p class="my-4 text-[11px] tracking-[3px] text-festival-muted">{storyPackage?.story.estimatedMinutes ?? 25} {locale === 'en' ? 'MIN · SOLO INVESTIGATION' : '분 · 1인 수사'}</p>
       <h1 class="m-0 font-serif text-[38px] font-medium leading-[1.5] tracking-[-1px] max-[520px]:text-[30px]">{storyPackage?.story.title ?? t('caseTitle')}</h1>
       <p class="mt-3 text-sm leading-[1.9] text-festival-muted">{storyPackage?.story.subtitle ?? t('caseSubtitle')}</p>
     </div>
@@ -272,7 +273,14 @@
     <button class="mt-5 cursor-pointer border-0 bg-transparent px-3 py-2 text-xs text-festival-muted hover:text-festival-gold disabled:cursor-not-allowed disabled:opacity-50" disabled={exitDisabled} onclick={onExit}>{exitLabel ?? t('backToPlatform')}</button>
   </section>
 {:else if phase === 'intro'}
-  {#if openingCues.length}<StoryCuePlayer cues={openingCues} onComplete={finishOpening} />{/if}
+  {#if openingCues.length}
+    <StoryCuePlayer cues={openingCues} onComplete={finishOpening} />
+  {:else}
+    <section class="mx-auto max-w-[680px] border border-festival-line bg-festival-panel p-8 text-center">
+      <p class="muted">{t('openingHasNoNarration')}</p>
+      <Button class="primary mx-auto max-w-[400px]" onclick={finishOpening} variant="primary">{t('beginInvestigation')} <span>→</span></Button>
+    </section>
+  {/if}
 {:else if phase === 'cast'}
   <section class="mx-auto max-w-[840px]">
     <p class="eyebrow">THE SUSPECTS</p><h1 class="heading-one page-title">{t('suspectsTitle')}</h1><p class="muted mb-7">{t('suspectDescription')}</p>
@@ -327,7 +335,7 @@
     <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-festival-line pt-5"><Button class="text-button" onclick={showHint} variant="text">{t('hint')}</Button><div class="flex gap-3"><Button class="secondary mt-0 w-auto" onclick={() => { phase = 'cross'; selectedSuspect = ''; }} variant="secondary">{t('reviewEvidence')}</Button><Button class="primary mt-0 w-auto min-w-[190px]" disabled={!selectedSuspect || accusation.length !== 3} onclick={arrest} variant="primary">{t('arrest')} <span>→</span></Button></div></div>
   </section>
 {:else if phase === 'win'}
-  <section class="mx-auto max-w-[760px] border border-festival-gold-border bg-festival-panel p-8 text-center max-[520px]:p-5"><p class="eyebrow">{t('allCaught')}</p><h1 class="heading-one page-title">{t('success')}</h1><p class="muted">{t('successDescription')}</p>{#if resolutionCues.length}<div class="mt-8"><StoryCuePlayer cues={resolutionCues} onComplete={() => {}} /></div>{/if}<StoryRating {runId} /><Button class="primary mt-7" onclick={startOver} variant="primary">{t('replay')} <span>↻</span></Button><button class="mt-4 cursor-pointer border-0 bg-transparent px-3 py-2 text-xs text-festival-muted hover:text-festival-gold disabled:cursor-not-allowed disabled:opacity-50" disabled={exitDisabled} onclick={onExit}>{exitLabel ?? t('backToPlatform')}</button></section>
+  <section class="mx-auto max-w-[760px] border border-festival-gold-border bg-festival-panel p-8 text-center max-[520px]:p-5"><p class="eyebrow">{t('allCaught')}</p><h1 class="heading-one page-title">{t('success')}</h1><p class="muted">{locale === 'en' ? 'You identified the culprit and the key evidence.' : '범인과 핵심 증거를 정확히 짚어냈어.'}</p>{#if resolutionCues.length}<div class="mt-8"><StoryCuePlayer cues={resolutionCues} onComplete={() => {}} /></div>{/if}<StoryRating {runId} /><Button class="primary mt-7" onclick={startOver} variant="primary">{t('replay')} <span>↻</span></Button><button class="mt-4 cursor-pointer border-0 bg-transparent px-3 py-2 text-xs text-festival-muted hover:text-festival-gold disabled:cursor-not-allowed disabled:opacity-50" disabled={exitDisabled} onclick={onExit}>{exitLabel ?? t('backToPlatform')}</button></section>
 {:else}
   <section class="mx-auto max-w-[680px] border border-festival-line bg-festival-panel p-8 text-center max-[520px]:p-5"><p class="eyebrow">{t('caseUnresolved')}</p><span class="text-5xl text-festival-gold" aria-hidden="true">…</span><h1 class="heading-one page-title mt-5">{t('unresolved')}</h1><p class="narrative">{resultMessage}</p><StoryRating {runId} /><div class="mt-7 grid gap-3 sm:grid-cols-2"><Button class="primary mt-0" onclick={startOver} variant="primary">{t('restart')} <span>↻</span></Button><Button class="secondary mt-0" disabled={exitDisabled} onclick={onExit} variant="secondary">{exitLabel ?? t('backToPlatform')} <span>↗</span></Button></div></section>
 {/if}

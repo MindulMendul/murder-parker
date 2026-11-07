@@ -4,25 +4,24 @@ import {
   inspectStoryEvidenceSchema,
   startStorySessionSchema,
 } from "@festival/shared";
-import type { SQLiteStoryRunStore } from "../../infrastructure/sqlite/story-run-store";
-import type { FileStoryCatalog } from "../platform/stories/file-catalog";
+import { StoryRunQuotaError, type SQLiteStoryRunStore } from "../../infrastructure/sqlite/story-run-store";
+import type { StoryCatalog } from "../platform/stories/ports/story-catalog";
+import { supportsSoloStory } from "./solo-story";
 import type { StorySessionService } from "./story-session-service";
 
 export function createGameRoutes(deps: {
-  stories: FileStoryCatalog;
+  stories: StoryCatalog;
   runs: SQLiteStoryRunStore;
   sessions: StorySessionService;
 }) {
   const app = new Hono();
 
+  app.use("*", async (c, next) => { c.header("Cache-Control", "no-store"); await next(); });
+
   app.get("/stories/:id", (c) => {
     const story = deps.stories.get(c.req.param("id"));
-    if (
-      !story ||
-      story.story.mode !== "solo" ||
-      story.content.mechanics.type !== "solo-investigation"
-    )
-      return c.json({ error: "찾을 수 없는 스토리야." }, 404);
+    if (!story) return c.json({ error: "공개된 작품을 찾을 수 없어." }, 404);
+    if (!supportsSoloStory(story)) return c.json({ error: "이 작품은 현재 1인 수사 엔진에서 지원하지 않는 진행 방식이야." }, 422);
     deps.runs.record({
       id: crypto.randomUUID(),
       runId: null,
@@ -32,20 +31,17 @@ export function createGameRoutes(deps: {
       value: null,
       metadata: { version: story.story.version },
     });
-    const { solution: _privateSolution, ...publicMechanics } = story.content.mechanics;
-    return c.json({
-      ...story,
-      content: {
-        ...story.content,
-        scenes: story.content.scenes.filter((scene) => scene.id !== "resolution"),
-        mechanics: publicMechanics,
-      },
-    });
+    return c.json({ story: story.story });
   });
 
   app.post("/sessions", async (c) => {
     const { storyId } = startStorySessionSchema.parse(await c.req.json());
-    const session = deps.sessions.start(storyId);
+    let session;
+    try { session = deps.sessions.start(storyId); }
+    catch (error) {
+      if (error instanceof StoryRunQuotaError) return c.json({ error: error.message }, 429);
+      throw error;
+    }
     deps.runs.record({
       id: crypto.randomUUID(),
       runId: session.runId,

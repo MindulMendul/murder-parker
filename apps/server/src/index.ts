@@ -9,6 +9,7 @@ import { storyCatalog } from "./modules/platform/stories/catalog";
 import { fileStoryCatalog } from "./modules/platform/stories/file-catalog";
 import { SQLiteStoryRunStore } from "./infrastructure/sqlite/story-run-store";
 import { SQLiteWorkshopStore } from "./infrastructure/sqlite/workshop-store";
+import { PlayStoryCatalog } from "./modules/platform/stories/play-catalog";
 import { StorySessionService } from "./modules/game/story-session-service";
 import { createAccountRoutes } from "./modules/platform/account-routes";
 import { createPlatformRoutes } from "./modules/platform/routes";
@@ -26,7 +27,8 @@ export const store = new Store(
 export const game = new Game(store, storyCatalog);
 const storyRunStore = new SQLiteStoryRunStore(store.db);
 const workshopStore = new SQLiteWorkshopStore(store.db);
-const storySessions = new StorySessionService(fileStoryCatalog, storyRunStore);
+const playCatalog = new PlayStoryCatalog(fileStoryCatalog, workshopStore);
+const storySessions = new StorySessionService(playCatalog, storyRunStore);
 
 const notifyTemporal = (action: "start" | "event" | "end", payload: object) => {
   const baseUrl = process.env.TEMPORAL_GATEWAY_URL;
@@ -81,7 +83,7 @@ const google = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET 
 app.route("/api/platform", createAccountRoutes({ store, production, google, onLogout: lobby.disconnect, googleDemo: process.env.GOOGLE_AUTH_DEMO === "true" }));
 app.route("/api/platform", createPlatformRoutes({
   store,
-  stories: fileStoryCatalog,
+  stories: playCatalog,
   runs: storyRunStore,
   production,
   adminToken: process.env.STORY_ADMIN_TOKEN,
@@ -93,7 +95,7 @@ app.route("/api/workshop", createWorkshopRoutes({
   runs: storyRunStore,
 }));
 app.route("/api/game", createGameRoutes({
-  stories: fileStoryCatalog,
+  stories: playCatalog,
   runs: storyRunStore,
   sessions: storySessions,
 }));

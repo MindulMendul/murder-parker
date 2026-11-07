@@ -306,3 +306,10 @@ export type StoryCue = z.infer<typeof storyCueSchema>;
 export type StoryPackage = z.infer<typeof storyPackageSchema>;
 export type StoryCatalogItem = z.infer<typeof storyCatalogItemSchema>;
 export type StoryCatalogResponse = z.infer<typeof storyCatalogResponseSchema>;
+
+/** Public solo view: source packages, answer keys and unreleased scenes stay on the server. */
+type SoloMechanics = Extract<StoryPackage["content"]["mechanics"], { type: "solo-investigation" }>;
+export type SoloStoryView = {
+  story: StoryPackage["story"];
+  content?: { mechanics: Omit<SoloMechanics, "solution" | "reactions"> & { reactions: Omit<SoloMechanics["reactions"][number], "revealsTruth">[] } };
+};

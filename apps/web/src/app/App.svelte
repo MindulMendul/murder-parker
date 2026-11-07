@@ -42,6 +42,11 @@
   let locale = $state<"ko" | "en">(getLocaleFromPath(location.pathname));
   const pagePath = (pathname: string) => pathname.replace(/^\/en(?=\/|$)/, "").replace(/\/+$/, "") || "/";
   let currentPath = $state(pagePath(location.pathname));
+  const selectedWorkshopStory = () => {
+    const id = new URLSearchParams(location.search).get("play");
+    return pagePath(location.pathname) === "/workshop" && id && id.length <= 200 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) ? id : null;
+  };
+  let workshopPlayId = $state<string | null>(selectedWorkshopStory());
   let loginDialog = $state<HTMLDialogElement>(undefined!);
   let pendingWorkshopAction: (() => void) | undefined;
   type AuthDestination = { page: "workshop" | "editor" | "account"; id?: string };
@@ -179,9 +184,19 @@
   }
 
   function openWorkshop() {
+    workshopPlayId = null;
     picker = false;
     currentPath = "/workshop";
     history.pushState({}, "", localePath(locale, "/workshop"));
+  }
+
+  function playWorkshopStory(id: string) {
+    if (room) {
+      error = locale === "en" ? "Leave your room before starting a workshop story." : "참가 중인 방에서 나온 뒤 창작 작품을 시작해 줘.";
+      return;
+    }
+    workshopPlayId = id;
+    history.pushState({}, "", `${localePath(locale, "/workshop")}?play=${encodeURIComponent(id)}`);
   }
 
   function openEditor(id?: string) {
@@ -334,6 +349,7 @@
       if (loginDialog?.open) loginDialog.close();
       locale = getLocaleFromPath(location.pathname);
       currentPath = pagePath(location.pathname);
+      workshopPlayId = selectedWorkshopStory();
       code = new URLSearchParams(location.search).get("room") ?? "";
       editorId = new URLSearchParams(location.search).get("id") ?? undefined;
       document.documentElement.lang = locale;
@@ -390,8 +406,12 @@
     <main class="main"><Panel><h1 class="heading-one">{locale === "en" ? "Choose your nickname" : "닉네임을 정해 주세요"}</h1><form onsubmit={event => { event.preventDefault(); void rename(nickname); }}><NicknameField bind:value={nickname} {locale} {busy} /><Button type="submit" disabled={busy}>{locale === "en" ? "Save and continue" : "저장하고 시작하기"}</Button></form><Button variant="secondary" disabled={busy} onclick={() => void logout()}>{locale === "en" ? "Sign out" : "로그아웃"}</Button></Panel></main>
   {:else if currentPath === "/mypage" && snapshot}
     <MyPage me={snapshot.me} accountType={account.accountType} {locale} {busy} onRename={rename} onLogout={() => logout()} onDeleteAccount={() => logout(true)} onEdit={openEditor} onWorkshop={openWorkshop} />
+  {:else if currentPath === "/workshop" && workshopPlayId && room}
+    <main class="main"><Panel><p role="status">{locale === "en" ? "Leave your room before starting a workshop story." : "참가 중인 방에서 나온 뒤 창작 작품을 시작해 줘."}</p><Button onclick={openWorkshop}>{locale === "en" ? "Back to workshop" : "창작마당으로 돌아가기"}</Button></Panel></main>
+  {:else if currentPath === "/workshop" && workshopPlayId}
+    {#key workshopPlayId}<main class="main"><SoloGame {locale} storyId={workshopPlayId} onExit={openWorkshop} exitLabel={locale === "en" ? "Back to workshop" : "창작마당으로 돌아가기"} /></main>{/key}
   {:else if currentPath === "/workshop"}
-    <WorkshopPage {locale} loggedIn={snapshot !== null} onLogin={requestWorkshopLogin} onEdit={(id) => id ? openEditor(id) : createWorkshopStory()} />
+    <WorkshopPage {locale} onPlay={playWorkshopStory} loggedIn={snapshot !== null} onLogin={requestWorkshopLogin} onEdit={(id) => id ? openEditor(id) : createWorkshopStory()} />
   {:else if editorPath && snapshot}
     {#key editorId}<WorkshopEditor {locale} onDirtyChange={(dirty) => { editorHasChanges = dirty; }} storyId={editorId} onBack={openWorkshop} onSaved={savedWorkshopStory} />{/key}
   {:else if !snapshot}

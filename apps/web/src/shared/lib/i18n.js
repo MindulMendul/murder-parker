@@ -100,6 +100,8 @@ const translations = {
   caseTitle: ["덕일상사 살인사건", "The Deokil Trading Murder"],
   caseSubtitle: ["네 명의 용의자, 아홉 개의 증거. 혼자 수사하고 범인을 밝혀내.", "Four suspects. Nine clues. Investigate alone and uncover the culprit."],
   caseStart: ["사건 시작하기", "Start the case"],
+  openingHasNoNarration: ["시작 장면에 대사가 없어요. 바로 조사할 수 있어요.", "This story has no opening narration. You can begin investigating now."],
+  beginInvestigation: ["조사 시작하기", "Begin investigation"],
   backToPlatform: ["플랫폼 홈으로 돌아가기", "Back to the platform"],
   caseIntro: ["사건 기록", "CASE FILE"],
   next: ["다음", "Next"],

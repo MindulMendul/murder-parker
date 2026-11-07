@@ -3,11 +3,11 @@ import { getCookie, setCookie } from "hono/cookie";
 import { guestSchema, rumVitalSchema } from "@festival/shared";
 import type { Store } from "../../store";
 import type { SQLiteStoryRunStore } from "../../infrastructure/sqlite/story-run-store";
-import type { FileStoryCatalog } from "./stories/file-catalog";
+import type { StoryCatalog } from "./stories/ports/story-catalog";
 
 export function createPlatformRoutes(deps: {
   store: Store;
-  stories: FileStoryCatalog;
+  stories: StoryCatalog;
   runs: SQLiteStoryRunStore;
   production: boolean;
   adminToken?: string;

@@ -100,4 +100,4 @@ export {
   accuseStorySchema,
   rumVitalSchema,
 } from "./story";
-export type { StoryCue, StoryPackage, StoryCatalogItem, StoryCatalogResponse } from "./story";
+export type { SoloStoryView, StoryCue, StoryPackage, StoryCatalogItem, StoryCatalogResponse } from "./story";
