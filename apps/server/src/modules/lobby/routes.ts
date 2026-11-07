@@ -8,6 +8,8 @@ import type { Store } from "../../store";
 import type { Game } from "../game/game";
 import type { ApiEnv } from "../http/env";
 
+import { ReconnectGrace } from "./reconnect-grace";
+
 type TemporalAction = "start" | "event" | "end";
 
 export function createLobbyRoutes(deps: {
@@ -28,6 +30,7 @@ export function createLobbyRoutes(deps: {
       }
     }
   };
+  const presence = new ReconnectGrace(deps.game, broadcast);
   const authenticate = (c: Context<ApiEnv>) =>
     deps.store.authenticate(getCookie(c, "festival_guest"));
 
@@ -109,7 +112,7 @@ export function createLobbyRoutes(deps: {
         onOpen(_event, ws) {
           connection = ws;
           sockets.set(ws, { guest, expires: deps.store.sessionExpiry(getCookie(c, "festival_guest")) });
-          deps.game.online.set(guest.id, (deps.game.online.get(guest.id) ?? 0) + 1);
+          presence.connect(guest.id);
           broadcast();
         },
         onMessage(event, ws) {
@@ -160,10 +163,7 @@ export function createLobbyRoutes(deps: {
         },
         onClose(_event, ws) {
           if (connection && sockets.delete(connection)) {
-            deps.game.online.set(
-              guest.id,
-              Math.max(0, (deps.game.online.get(guest.id) ?? 1) - 1),
-            );
+            presence.disconnect(guest.id);
             broadcast();
           }
         },

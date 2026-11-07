@@ -212,6 +212,15 @@ export class Game {
     this.store.save();
     return r;
   }
+  expireConnection(guestId: string, roomId: string) {
+    const room = this.roomFor(guestId);
+    if (!room || room.id !== roomId || (this.online.get(guestId) ?? 0) > 0) return;
+    // End access to the room without rewriting the game's participant history.
+    room.memberIds = room.memberIds.filter((id) => id !== guestId);
+    if (!room.memberIds.length) delete this.state.rooms[room.id];
+    else if (room.hostId === guestId) room.hostId = room.memberIds[0];
+    this.store.save();
+  }
   command(me: Guest, command: Command) {
     const r = this.needRoom(me.id);
     const s = r.sessionId ? this.state.sessions[r.sessionId] : null;
