@@ -1,7 +1,7 @@
 import { Hono, type Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createBunWebSocket } from "hono/bun";
-import { createRoomSchema, joinRoomSchema, commandSchema } from "@festival/shared";
+import { createRoomSchema, joinRoomSchema, commandSchema, soloRoomExitSchema } from "@festival/shared";
 import type { Guest } from "@festival/shared";
 import type { WSContext } from "hono/ws";
 import type { Store } from "../../store";
@@ -85,6 +85,12 @@ export function createLobbyRoutes(deps: {
     const room = deps.game.join(c.get("guest"), code);
     broadcast();
     return c.json({ roomId: room.id });
+  });
+  app.post("/rooms/solo-exit", async (c) => {
+    const { roomId, soloPlayId } = soloRoomExitSchema.parse(await c.req.json());
+    deps.game.endSolo(c.get("guest"), roomId, soloPlayId);
+    broadcast();
+    return c.json({ ok: true });
   });
   app.get(
     "/ws",

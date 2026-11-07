@@ -1,0 +1,98 @@
+[
+  {
+    "locale": "ko",
+    "width": 1440,
+    "initiallyClosed": true,
+    "enterOpens": true,
+    "spaceCloses": true,
+    "conditionPreserved": true,
+    "resetClearsSearch": true,
+    "resetClearsCount": true,
+    "noOverflow": true,
+    "pageErrors": []
+  },
+  {
+    "locale": "ko",
+    "width": 768,
+    "initiallyClosed": true,
+    "enterOpens": true,
+    "spaceCloses": true,
+    "conditionPreserved": true,
+    "resetClearsSearch": true,
+    "resetClearsCount": true,
+    "noOverflow": true,
+    "pageErrors": []
+  },
+  {
+    "locale": "ko",
+    "width": 375,
+    "initiallyClosed": true,
+    "enterOpens": true,
+    "spaceCloses": true,
+    "conditionPreserved": true,
+    "resetClearsSearch": true,
+    "resetClearsCount": true,
+    "noOverflow": true,
+    "pageErrors": []
+  },
+  {
+    "locale": "ko",
+    "width": 320,
+    "initiallyClosed": true,
+    "enterOpens": true,
+    "spaceCloses": true,
+    "conditionPreserved": true,
+    "resetClearsSearch": true,
+    "resetClearsCount": true,
+    "noOverflow": true,
+    "pageErrors": []
+  },
+  {
+    "locale": "en",
+    "width": 1440,
+    "initiallyClosed": true,
+    "enterOpens": true,
+    "spaceCloses": true,
+    "conditionPreserved": true,
+    "resetClearsSearch": true,
+    "resetClearsCount": true,
+    "noOverflow": true,
+    "pageErrors": []
+  },
+  {
+    "locale": "en",
+    "width": 768,
+    "initiallyClosed": true,
+    "enterOpens": true,
+    "spaceCloses": true,
+    "conditionPreserved": true,
+    "resetClearsSearch": true,
+    "resetClearsCount": true,
+    "noOverflow": true,
+    "pageErrors": []
+  },
+  {
+    "locale": "en",
+    "width": 375,
+    "initiallyClosed": true,
+    "enterOpens": true,
+    "spaceCloses": true,
+    "conditionPreserved": true,
+    "resetClearsSearch": true,
+    "resetClearsCount": true,
+    "noOverflow": true,
+    "pageErrors": []
+  },
+  {
+    "locale": "en",
+    "width": 320,
+    "initiallyClosed": true,
+    "enterOpens": true,
+    "spaceCloses": true,
+    "conditionPreserved": true,
+    "resetClearsSearch": true,
+    "resetClearsCount": true,
+    "noOverflow": true,
+    "pageErrors": []
+  }
+]

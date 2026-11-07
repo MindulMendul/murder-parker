@@ -1,0 +1,632 @@
+{
+  "testedBase": "5c8ebaf4230166c9d7b57c9cde8a51c7862bd163",
+  "testedCodeCommit": "f2acd6b925e06b9b2baa58d4a68e13738faeb1e",
+  "widths": [
+    1440,
+    1024,
+    768,
+    640,
+    375,
+    320
+  ],
+  "locales": [
+    "ko",
+    "en"
+  ],
+  "nicknameLength": 20,
+  "pageErrors": 0,
+  "results": [
+    {
+      "locale": "ko",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "ko",
+      "workshopHref": "/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 791.40625,
+          "right": 866.8125,
+          "top": 28.5,
+          "bottom": 72.5,
+          "centerY": 50.5
+        },
+        "#language": {
+          "left": 958.625,
+          "right": 1037.625,
+          "top": 28.5,
+          "bottom": 72.5,
+          "centerY": 50.5
+        },
+        ".identity .dot": {
+          "left": 1053.625,
+          "right": 1060.625,
+          "top": 47,
+          "bottom": 54,
+          "centerY": 50.5
+        },
+        ".identity-name": {
+          "left": 1070.625,
+          "right": 1243.265625,
+          "top": 40.75,
+          "bottom": 60.25,
+          "centerY": 50.5
+        },
+        ".identity-tag": {
+          "left": 1253.265625,
+          "right": 1308,
+          "top": 38,
+          "bottom": 63,
+          "centerY": 50.5
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "ko",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "viewportWidth": 1024,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "ko",
+      "workshopHref": "/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 455.40625,
+          "right": 530.8125,
+          "top": 28.5,
+          "bottom": 72.5,
+          "centerY": 50.5
+        },
+        "#language": {
+          "left": 622.625,
+          "right": 701.625,
+          "top": 28.5,
+          "bottom": 72.5,
+          "centerY": 50.5
+        },
+        ".identity .dot": {
+          "left": 717.625,
+          "right": 724.625,
+          "top": 47,
+          "bottom": 54,
+          "centerY": 50.5
+        },
+        ".identity-name": {
+          "left": 734.625,
+          "right": 907.265625,
+          "top": 40.75,
+          "bottom": 60.25,
+          "centerY": 50.5
+        },
+        ".identity-tag": {
+          "left": 917.265625,
+          "right": 972,
+          "top": 38,
+          "bottom": 63,
+          "centerY": 50.5
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "ko",
+      "width": 768,
+      "scrollWidth": 768,
+      "viewportWidth": 768,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "ko",
+      "workshopHref": "/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 24,
+          "right": 99.40625,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        "#language": {
+          "left": 191.21875,
+          "right": 270.21875,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        ".identity .dot": {
+          "left": 286.21875,
+          "right": 293.21875,
+          "top": 107.5,
+          "bottom": 114.5,
+          "centerY": 111
+        },
+        ".identity-name": {
+          "left": 303.21875,
+          "right": 449.296875,
+          "top": 102.75,
+          "bottom": 119.25,
+          "centerY": 111
+        },
+        ".identity-tag": {
+          "left": 459.296875,
+          "right": 514.03125,
+          "top": 98.5,
+          "bottom": 123.5,
+          "centerY": 111
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "ko",
+      "width": 640,
+      "scrollWidth": 640,
+      "viewportWidth": 640,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "ko",
+      "workshopHref": "/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 24,
+          "right": 99.40625,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        "#language": {
+          "left": 183.21875,
+          "right": 262.21875,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        ".identity .dot": {
+          "left": 274.21875,
+          "right": 281.21875,
+          "top": 107.5,
+          "bottom": 114.5,
+          "centerY": 111
+        },
+        ".identity-name": {
+          "left": 291.21875,
+          "right": 437.296875,
+          "top": 102.75,
+          "bottom": 119.25,
+          "centerY": 111
+        },
+        ".identity-tag": {
+          "left": 447.296875,
+          "right": 502.03125,
+          "top": 98.5,
+          "bottom": 123.5,
+          "centerY": 111
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "ko",
+      "width": 375,
+      "scrollWidth": 375,
+      "viewportWidth": 375,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "ko",
+      "workshopHref": "/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 18,
+          "right": 93.40625,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        "#language": {
+          "left": 177.21875,
+          "right": 256.21875,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        ".identity .dot": {
+          "left": 18,
+          "right": 25,
+          "top": 154,
+          "bottom": 161,
+          "centerY": 157.5
+        },
+        ".identity-name": {
+          "left": 35,
+          "right": 181.078125,
+          "top": 149.25,
+          "bottom": 165.75,
+          "centerY": 157.5
+        },
+        ".identity-tag": {
+          "left": 191.078125,
+          "right": 245.8125,
+          "top": 145,
+          "bottom": 170,
+          "centerY": 157.5
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "ko",
+      "width": 320,
+      "scrollWidth": 320,
+      "viewportWidth": 320,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "ko",
+      "workshopHref": "/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 18,
+          "right": 93.40625,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        "#language": {
+          "left": 177.21875,
+          "right": 256.21875,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        ".identity .dot": {
+          "left": 18,
+          "right": 25,
+          "top": 154,
+          "bottom": 161,
+          "centerY": 157.5
+        },
+        ".identity-name": {
+          "left": 35,
+          "right": 181.078125,
+          "top": 149.25,
+          "bottom": 165.75,
+          "centerY": 157.5
+        },
+        ".identity-tag": {
+          "left": 191.078125,
+          "right": 245.8125,
+          "top": 145,
+          "bottom": 170,
+          "centerY": 157.5
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "en",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "viewportWidth": 1440,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "en",
+      "workshopHref": "/en/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 791.9375,
+          "right": 877.921875,
+          "top": 28.5,
+          "bottom": 72.5,
+          "centerY": 50.5
+        },
+        "#language": {
+          "left": 959.796875,
+          "right": 1037.796875,
+          "top": 28.5,
+          "bottom": 72.5,
+          "centerY": 50.5
+        },
+        ".identity .dot": {
+          "left": 1053.796875,
+          "right": 1060.796875,
+          "top": 47,
+          "bottom": 54,
+          "centerY": 50.5
+        },
+        ".identity-name": {
+          "left": 1070.796875,
+          "right": 1240.546875,
+          "top": 40.75,
+          "bottom": 60.25,
+          "centerY": 50.5
+        },
+        ".identity-tag": {
+          "left": 1250.546875,
+          "right": 1308,
+          "top": 38,
+          "bottom": 63,
+          "centerY": 50.5
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "en",
+      "width": 1024,
+      "scrollWidth": 1024,
+      "viewportWidth": 1024,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "en",
+      "workshopHref": "/en/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 455.9375,
+          "right": 541.921875,
+          "top": 28.5,
+          "bottom": 72.5,
+          "centerY": 50.5
+        },
+        "#language": {
+          "left": 623.796875,
+          "right": 701.796875,
+          "top": 28.5,
+          "bottom": 72.5,
+          "centerY": 50.5
+        },
+        ".identity .dot": {
+          "left": 717.796875,
+          "right": 724.796875,
+          "top": 47,
+          "bottom": 54,
+          "centerY": 50.5
+        },
+        ".identity-name": {
+          "left": 734.796875,
+          "right": 904.546875,
+          "top": 40.75,
+          "bottom": 60.25,
+          "centerY": 50.5
+        },
+        ".identity-tag": {
+          "left": 914.546875,
+          "right": 972,
+          "top": 38,
+          "bottom": 63,
+          "centerY": 50.5
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "en",
+      "width": 768,
+      "scrollWidth": 768,
+      "viewportWidth": 768,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "en",
+      "workshopHref": "/en/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 24,
+          "right": 109.984375,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        "#language": {
+          "left": 191.859375,
+          "right": 269.859375,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        ".identity .dot": {
+          "left": 285.859375,
+          "right": 292.859375,
+          "top": 107.5,
+          "bottom": 114.5,
+          "centerY": 111
+        },
+        ".identity-name": {
+          "left": 302.859375,
+          "right": 446.5,
+          "top": 102.75,
+          "bottom": 119.25,
+          "centerY": 111
+        },
+        ".identity-tag": {
+          "left": 456.5,
+          "right": 513.953125,
+          "top": 98.5,
+          "bottom": 123.5,
+          "centerY": 111
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "en",
+      "width": 640,
+      "scrollWidth": 640,
+      "viewportWidth": 640,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "en",
+      "workshopHref": "/en/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 24,
+          "right": 109.984375,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        "#language": {
+          "left": 183.859375,
+          "right": 261.859375,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        ".identity .dot": {
+          "left": 273.859375,
+          "right": 280.859375,
+          "top": 107.5,
+          "bottom": 114.5,
+          "centerY": 111
+        },
+        ".identity-name": {
+          "left": 290.859375,
+          "right": 434.5,
+          "top": 102.75,
+          "bottom": 119.25,
+          "centerY": 111
+        },
+        ".identity-tag": {
+          "left": 444.5,
+          "right": 501.953125,
+          "top": 98.5,
+          "bottom": 123.5,
+          "centerY": 111
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "en",
+      "width": 375,
+      "scrollWidth": 375,
+      "viewportWidth": 375,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "en",
+      "workshopHref": "/en/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 18,
+          "right": 103.984375,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        "#language": {
+          "left": 177.859375,
+          "right": 255.859375,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        ".identity .dot": {
+          "left": 18,
+          "right": 25,
+          "top": 154,
+          "bottom": 161,
+          "centerY": 157.5
+        },
+        ".identity-name": {
+          "left": 35,
+          "right": 178.640625,
+          "top": 149.25,
+          "bottom": 165.75,
+          "centerY": 157.5
+        },
+        ".identity-tag": {
+          "left": 188.640625,
+          "right": 246.09375,
+          "top": 145,
+          "bottom": 170,
+          "centerY": 157.5
+        }
+      },
+      "noOverflow": true
+    },
+    {
+      "locale": "en",
+      "width": 320,
+      "scrollWidth": 320,
+      "viewportWidth": 320,
+      "withinViewport": true,
+      "noOverlap": true,
+      "verticalCenterDelta": 0,
+      "nickname": "6kqpi3NNNNNNNNNNNNNN",
+      "accountTag": "GUEST",
+      "language": "en",
+      "workshopHref": "/en/workshop",
+      "boxes": {
+        ".header-navigation a": {
+          "left": 18,
+          "right": 103.984375,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        "#language": {
+          "left": 177.859375,
+          "right": 255.859375,
+          "top": 89,
+          "bottom": 133,
+          "centerY": 111
+        },
+        ".identity .dot": {
+          "left": 18,
+          "right": 25,
+          "top": 154,
+          "bottom": 161,
+          "centerY": 157.5
+        },
+        ".identity-name": {
+          "left": 35,
+          "right": 178.640625,
+          "top": 149.25,
+          "bottom": 165.75,
+          "centerY": 157.5
+        },
+        ".identity-tag": {
+          "left": 188.640625,
+          "right": 246.09375,
+          "top": 145,
+          "bottom": 170,
+          "centerY": 157.5
+        }
+      },
+      "noOverflow": true
+    }
+  ]
+}

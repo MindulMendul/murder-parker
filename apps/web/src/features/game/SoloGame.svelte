@@ -1,13 +1,15 @@
 <script>
   import { Button } from "../../shared/ui";
+  import { supportedSoloStory } from '@festival/shared';
+  import { rememberSoloExit } from '../../shared/lib/solo-lifecycle';
   import { onMount } from 'svelte';
   import { translate } from '../../shared/lib/i18n.js';
   import { trackEvent } from '../../analytics.js';
   import StoryCuePlayer from './StoryCuePlayer.svelte';
   import StoryRating from './StoryRating.svelte';
 
-  /** @type {{ locale?: 'ko' | 'en', onExit?: () => void }} */
-  let { locale = 'ko', onExit = () => {} } = $props();
+  /** @type {{ locale?: 'ko' | 'en', storyId?: string, onExit?: () => void, exitLabel?: string, exitDisabled?: boolean, exitMessage?: string, roomLifecycle?: import('../../shared/lib/solo-lifecycle').SoloExit, onLifecycleExit?: (exit: import('../../shared/lib/solo-lifecycle').SoloExit) => void }} */
+  let { locale = 'ko', storyId = supportedSoloStory.id, onExit = () => {}, exitLabel, exitDisabled = false, exitMessage = '', roomLifecycle, onLifecycleExit = () => {} } = $props();
   /** @param {Parameters<typeof translate>[1]} key */
   const t = (key) => translate(locale, key);
 
@@ -55,6 +57,7 @@
   let selected = $derived(suspects.find((suspect) => suspect.id === selectedSuspect));
 
   onMount(() => {
+    const lifecycle = roomLifecycle;
     const navigationId = crypto.randomUUID();
     const navigation = performance.getEntriesByType('navigation')[0];
     const pageLoadMs = navigation instanceof PerformanceNavigationTiming && navigation.loadEventEnd > 0
@@ -65,14 +68,14 @@
       headers: { 'Content-Type': 'application/json' },
       keepalive: true,
       body: JSON.stringify({
-        storyId: 'deokil-trading-murder',
+        storyId,
         metricName: 'page_load_ms',
         value: Math.max(0, pageLoadMs),
         navigationId,
         route: '/solo',
       }),
     }).catch(() => {});
-    void fetch('/api/game/stories/deokil-trading-murder')
+    void fetch(`/api/game/stories/${encodeURIComponent(storyId)}`)
       .then(async (response) => {
         if (!response.ok) throw new Error('스토리를 불러오지 못했어.');
         storyPackage = await response.json();
@@ -80,7 +83,15 @@
       .catch((error) => {
         storyLoadError = error instanceof Error ? error.message : '스토리를 불러오지 못했어.';
       });
+    let exited = false;
     const recordAbandonment = () => {
+      if (exited) return;
+      exited = true;
+      if (lifecycle) {
+        rememberSoloExit(sessionStorage, lifecycle);
+        onLifecycleExit(lifecycle);
+        navigator.sendBeacon('/api/lobby/rooms/solo-exit', new Blob([JSON.stringify(lifecycle)], { type: 'application/json' }));
+      }
       if (!startedAt || phase === 'win' || phase === 'fail') return;
       if (runId) navigator.sendBeacon(`/api/game/sessions/${runId}/abandon`, new Blob([], { type: 'application/json' }));
       trackEvent('story_abandon', {
@@ -91,7 +102,14 @@
       });
     };
     window.addEventListener('pagehide', recordAbandonment);
-    return () => window.removeEventListener('pagehide', recordAbandonment);
+    /** @param {PageTransitionEvent} event */
+    const restorePage = (event) => { if (event.persisted && lifecycle) location.reload(); };
+    window.addEventListener('pageshow', restorePage);
+    return () => {
+      window.removeEventListener('pagehide', recordAbandonment);
+      window.removeEventListener('pageshow', restorePage);
+      recordAbandonment();
+    };
   });
 
   async function startOver() {
@@ -231,6 +249,7 @@
 <svelte:head><title>{storyPackage?.story.title ?? '덕일상사 살인사건'} · 이상한 축제</title></svelte:head>
 
 {#if storyLoadError}<p class="mx-auto mb-4 max-w-[960px] border border-red-700/50 bg-festival-panel px-5 py-3 text-sm text-red-300" role="alert">{storyLoadError}</p>{/if}
+{#if exitMessage}<p class="mx-auto mb-4 max-w-[960px] text-sm text-festival-muted" role="status">{exitMessage}</p>{/if}
 {#if hintMessage}
   <aside class="mx-auto mb-6 flex max-w-[960px] items-start justify-between gap-4 border border-festival-gold-border bg-festival-panel px-5 py-4" role="status"><p class="m-0 text-sm leading-[1.9] text-festival-copy"><span class="mr-2 text-festival-gold">힌트</span>{hintMessage}</p><Button class="dismiss" ariaLabel="힌트 닫기" onclick={() => hintMessage = ''} variant="dismiss">×</Button></aside>
 {/if}
@@ -250,7 +269,7 @@
       {/each}
     </div>
     <Button class="primary mx-auto max-w-[540px]" disabled={!storyPackage} onclick={startOver} variant="primary">{t('caseStart')} <span>→</span></Button>
-    <button class="mt-5 cursor-pointer border-0 bg-transparent px-3 py-2 text-xs text-festival-muted hover:text-festival-gold" onclick={onExit}>{t('backToPlatform')}</button>
+    <button class="mt-5 cursor-pointer border-0 bg-transparent px-3 py-2 text-xs text-festival-muted hover:text-festival-gold disabled:cursor-not-allowed disabled:opacity-50" disabled={exitDisabled} onclick={onExit}>{exitLabel ?? t('backToPlatform')}</button>
   </section>
 {:else if phase === 'intro'}
   {#if openingCues.length}<StoryCuePlayer cues={openingCues} onComplete={finishOpening} />{/if}
@@ -308,7 +327,7 @@
     <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-festival-line pt-5"><Button class="text-button" onclick={showHint} variant="text">{t('hint')}</Button><div class="flex gap-3"><Button class="secondary mt-0 w-auto" onclick={() => { phase = 'cross'; selectedSuspect = ''; }} variant="secondary">{t('reviewEvidence')}</Button><Button class="primary mt-0 w-auto min-w-[190px]" disabled={!selectedSuspect || accusation.length !== 3} onclick={arrest} variant="primary">{t('arrest')} <span>→</span></Button></div></div>
   </section>
 {:else if phase === 'win'}
-  <section class="mx-auto max-w-[760px] border border-festival-gold-border bg-festival-panel p-8 text-center max-[520px]:p-5"><p class="eyebrow">{t('allCaught')}</p><h1 class="heading-one page-title">{t('success')}</h1><p class="muted">{t('successDescription')}</p>{#if resolutionCues.length}<div class="mt-8"><StoryCuePlayer cues={resolutionCues} onComplete={() => {}} /></div>{/if}<StoryRating {runId} /><Button class="primary mt-7" onclick={startOver} variant="primary">{t('replay')} <span>↻</span></Button><button class="mt-4 cursor-pointer border-0 bg-transparent px-3 py-2 text-xs text-festival-muted hover:text-festival-gold" onclick={onExit}>{t('backToPlatform')}</button></section>
+  <section class="mx-auto max-w-[760px] border border-festival-gold-border bg-festival-panel p-8 text-center max-[520px]:p-5"><p class="eyebrow">{t('allCaught')}</p><h1 class="heading-one page-title">{t('success')}</h1><p class="muted">{t('successDescription')}</p>{#if resolutionCues.length}<div class="mt-8"><StoryCuePlayer cues={resolutionCues} onComplete={() => {}} /></div>{/if}<StoryRating {runId} /><Button class="primary mt-7" onclick={startOver} variant="primary">{t('replay')} <span>↻</span></Button><button class="mt-4 cursor-pointer border-0 bg-transparent px-3 py-2 text-xs text-festival-muted hover:text-festival-gold disabled:cursor-not-allowed disabled:opacity-50" disabled={exitDisabled} onclick={onExit}>{exitLabel ?? t('backToPlatform')}</button></section>
 {:else}
-  <section class="mx-auto max-w-[680px] border border-festival-line bg-festival-panel p-8 text-center max-[520px]:p-5"><p class="eyebrow">{t('caseUnresolved')}</p><span class="text-5xl text-festival-gold" aria-hidden="true">…</span><h1 class="heading-one page-title mt-5">{t('unresolved')}</h1><p class="narrative">{resultMessage}</p><StoryRating {runId} /><div class="mt-7 grid gap-3 sm:grid-cols-2"><Button class="primary mt-0" onclick={startOver} variant="primary">{t('restart')} <span>↻</span></Button><Button class="secondary mt-0" onclick={onExit} variant="secondary">{t('backToPlatform')} <span>↗</span></Button></div></section>
+  <section class="mx-auto max-w-[680px] border border-festival-line bg-festival-panel p-8 text-center max-[520px]:p-5"><p class="eyebrow">{t('caseUnresolved')}</p><span class="text-5xl text-festival-gold" aria-hidden="true">…</span><h1 class="heading-one page-title mt-5">{t('unresolved')}</h1><p class="narrative">{resultMessage}</p><StoryRating {runId} /><div class="mt-7 grid gap-3 sm:grid-cols-2"><Button class="primary mt-0" onclick={startOver} variant="primary">{t('restart')} <span>↻</span></Button><Button class="secondary mt-0" disabled={exitDisabled} onclick={onExit} variant="secondary">{exitLabel ?? t('backToPlatform')} <span>↗</span></Button></div></section>
 {/if}

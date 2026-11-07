@@ -12,6 +12,7 @@
       const response = await fetch(`/api/platform/nicknames/availability?nickname=${encodeURIComponent(checked)}`);
       const data = await response.json();
       if (checked !== value) return;
+      if (response.status === 429) { message = label('요청이 많아요. 잠시 후 다시 확인해 주세요.', 'Too many requests. Please try again shortly.'); return; }
       message = !response.ok ? data.error : data.available ? label('사용할 수 있는 닉네임이에요.', 'This nickname is available.') : label('이미 사용 중인 닉네임이에요.', 'This nickname is already in use.');
     } catch { message = label('연결을 확인해 주세요.', 'Check your connection.'); }
     finally { checking = false; }

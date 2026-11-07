@@ -1,4 +1,32 @@
 export const MAX_IMAGE_PIXELS = 16_000_000;
+const jpegFrames = new Set([192, 193, 194, 195, 197, 198, 199, 201, 202, 203, 205, 206, 207]);
+
+/** Skip JPEG segment payloads; at most 4096 small reads, never a full-file allocation. */
+export async function jpegDimensions(file: Blob): Promise<{ width: number; height: number }> {
+  const signature = new Uint8Array(await file.slice(0, 2).arrayBuffer());
+  if (signature[0] !== 255 || signature[1] !== 216) throw Error('format');
+  let offset = 2;
+  for (let scanned = 0; scanned < 4096 && offset + 4 <= file.size; scanned++) {
+    const bytes = new Uint8Array(await file.slice(offset, offset + 12).arrayBuffer());
+    if (bytes[0] !== 255) break;
+    let markerOffset = 1;
+    while (bytes[markerOffset] === 255) markerOffset++;
+    if (markerOffset === bytes.length) { offset += bytes.length - 1; continue; }
+    const marker = bytes[markerOffset]!;
+    if (marker === 0 || marker === 216 || marker === 217 || marker === 218) break;
+    const start = markerOffset + 1;
+    if (marker === 1 || (marker >= 208 && marker <= 215)) { offset += start; continue; }
+    if (start + 2 > bytes.length) { offset += markerOffset - 1; continue; }
+    const length = (bytes[start]! << 8) | bytes[start + 1]!;
+    if (length < 2 || offset + start + length > file.size) break;
+    if (jpegFrames.has(marker) && length >= 8) {
+      const frame = new DataView(await file.slice(offset + start + 3, offset + start + 7).arrayBuffer());
+      return { width: frame.getUint16(2), height: frame.getUint16(0) };
+    }
+    offset += start + length;
+  }
+  throw Error('format');
+}
 
 export function webpFilename(name: string): string {
   return `${name.replace(/\.[^.]*$/, '') || 'image'}.webp`;
@@ -31,7 +59,7 @@ export function imageDimensions(bytes: Uint8Array, mime: string): { width: numbe
       if (offset + 2 > bytes.length) break;
       const length = view.getUint16(offset);
       if (length < 2 || offset + length > bytes.length) break;
-      if ([192, 193, 194, 195, 197, 198, 199, 201, 202, 203, 205, 206, 207].includes(marker) && length >= 8) {
+      if (jpegFrames.has(marker) && length >= 8) {
         return { width: view.getUint16(offset + 5), height: view.getUint16(offset + 3) };
       }
       offset += length;

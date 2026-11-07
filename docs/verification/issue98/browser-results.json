@@ -1,0 +1,23 @@
+[
+  {
+    "locale": "ko",
+    "width": 1440,
+    "settingsOpen": true,
+    "focusReturned": true,
+    "logoutCancelled": true,
+    "logoutCompleted": true,
+    "noOverflow": true,
+    "pageErrors": []
+  },
+  {
+    "locale": "en",
+    "width": 375,
+    "settingsOpen": true,
+    "focusReturned": true,
+    "deleteScopeShown": true,
+    "deleteCancelled": true,
+    "deleteCompleted": true,
+    "noOverflow": true,
+    "pageErrors": []
+  }
+]

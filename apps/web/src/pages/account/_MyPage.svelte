@@ -4,13 +4,14 @@
   import NicknameField from '../../features/account/NicknameField.svelte';
   import type { Guest } from '@festival/shared';
   import type { WorkshopStory } from '../workshop/model/_story';
-  let { me, accountType, locale, busy, onRename, onLogout, onEdit, onWorkshop }: {
+  let { me, accountType, locale, busy, onRename, onLogout, onDeleteAccount, onEdit, onWorkshop }: {
     me: Guest; accountType: string | null; locale: 'ko' | 'en'; busy: boolean;
-    onRename: (nickname: string) => Promise<void>; onLogout: () => Promise<void>; onEdit: (id: string) => void; onWorkshop: () => void;
+    onRename: (nickname: string) => Promise<void>; onLogout: () => Promise<void>; onDeleteAccount: () => Promise<void>; onEdit: (id: string) => void; onWorkshop: () => void;
   } = $props();
-  let nickname = $state(untrack(() => me.nickname)), confirmLogout = $state(false);
+  let nickname = $state(untrack(() => me.nickname)), confirmLogout = $state(false), settings = $state(false), confirmDelete = $state(false);
   let items = $state<WorkshopStory[]>([]), total = $state(0), offset = $state(0), loading = $state(true), error = $state('');
   let deletion = $state<WorkshopStory | null>(null), deleting = $state(false), deleteError = $state('');
+  let settingsOpener = $state<HTMLButtonElement>();
   let disposed = false;
   onDestroy(() => { disposed = true; });
   const label = (ko: string, en: string) => locale === 'en' ? en : ko;
@@ -58,11 +59,25 @@
     {:else}<ul>{#each items as item (item.id)}<li><div><strong>{item.title}</strong><p class="muted">{item.published ? label('공개', 'Published') : label('비공개 초안', 'Private draft')}</p></div><div class="story-actions"><Button variant="secondary" disabled={deleting} onclick={() => onEdit(item.id)}>{label('수정하기', 'Edit')} ↗</Button>{#if !item.published}<Button variant="text" disabled={deleting} onclick={() => { deleteError = ''; deletion = item; }}>{label('초안 삭제', 'Delete draft')}</Button>{/if}</div></li>{/each}</ul>{/if}
     {#if total > 24}<nav aria-label={label('내 작품 페이지', 'My stories pages')}><Button variant="secondary" disabled={loading || offset === 0} onclick={() => void load(offset - 24)}>{label('이전', 'Previous')}</Button><Button variant="secondary" disabled={loading || offset + 24 >= total} onclick={() => void load(offset + 24)}>{label('다음', 'Next')}</Button></nav>{/if}
   </Panel>
-  <Panel><h2 class="heading-two">{label('로그아웃', 'Sign out')}</h2>
-    <p class="muted">{accountType === 'guest' ? label('게스트는 로그아웃하면 닉네임, 만든 작품과 즐겨찾기가 삭제되며 복구할 수 없어요.', 'Signing out deletes your guest nickname, stories and favorites permanently.') : label('다시 구글 로그인하면 내 작품과 닉네임이 유지돼요.', 'Your nickname and stories will be here when you sign in with Google again.')}</p>
-    {#if confirmLogout}<p>{label('로그아웃할까요?', 'Sign out now?')}</p><Button disabled={busy} onclick={() => void onLogout()}>{label('로그아웃 확인', 'Confirm sign out')}</Button><Button variant="secondary" onclick={() => confirmLogout = false}>{label('취소', 'Cancel')}</Button>
-    {:else}<Button variant="secondary" disabled={busy} onclick={() => confirmLogout = true}>{label('로그아웃', 'Sign out')}</Button>{/if}
-  </Panel>
+  {#if settings}
+    <Panel>
+      <div class="settings-heading"><h2 id="account-settings-title" tabindex="-1" class="heading-two">{label('계정 설정', 'Account settings')}</h2><Button variant="text" onclick={async () => { settings = false; confirmLogout = false; confirmDelete = false; await tick(); settingsOpener?.focus(); }}>{label('설정 닫기', 'Close settings')}</Button></div>
+      <section aria-labelledby="sign-out-title">
+        <h3 id="sign-out-title">{label('로그아웃', 'Sign out')}</h3>
+        <p class="muted">{accountType === 'guest' ? label('게스트는 로그아웃하면 닉네임, 만든 작품과 즐겨찾기가 삭제되며 복구할 수 없어요.', 'Signing out deletes your guest nickname, stories and favorites permanently.') : label('다시 구글 로그인하면 내 작품과 닉네임이 유지돼요.', 'Your nickname and stories will be here when you sign in with Google again.')}</p>
+        {#if confirmLogout}<p>{label('로그아웃할까요?', 'Sign out now?')}</p><div class="story-actions"><Button disabled={busy} onclick={() => void onLogout()}>{label('로그아웃 확인', 'Confirm sign out')}</Button><Button variant="secondary" disabled={busy} onclick={() => confirmLogout = false}>{label('취소', 'Cancel')}</Button></div>
+        {:else}<Button variant="secondary" disabled={busy} onclick={() => { confirmDelete = false; confirmLogout = true; }}>{label('로그아웃', 'Sign out')}</Button>{/if}
+      </section>
+      <section aria-labelledby="delete-account-title">
+        <h3 id="delete-account-title">{label('회원탈퇴', 'Delete account')}</h3>
+        <p class="muted">{label('탈퇴하면 닉네임, 구글 계정 연결, 만든 작품(공개 작품 포함), 즐겨찾기와 모든 로그인 세션이 삭제되며 복구할 수 없어요. 구글 계정 자체는 삭제되지 않아요. 이미 진행한 게임 기록과 익명 통계는 남을 수 있어요.', 'Deleting your account permanently removes your nickname, Google account link, stories (including published stories), favorites and all sign-in sessions. Your Google account itself is not deleted. Previous game records and anonymous statistics may remain.')}</p>
+        {#if confirmDelete}<p>{label('계정을 영구 삭제할까요?', 'Permanently delete your account?')}</p><div class="story-actions"><Button disabled={busy} onclick={() => void onDeleteAccount()}>{label('회원탈퇴 확인', 'Confirm account deletion')}</Button><Button variant="secondary" disabled={busy} onclick={() => confirmDelete = false}>{label('취소', 'Cancel')}</Button></div>
+        {:else}<Button variant="secondary" disabled={busy} onclick={() => { confirmLogout = false; confirmDelete = true; }}>{label('회원탈퇴', 'Delete account')}</Button>{/if}
+      </section>
+    </Panel>
+  {:else}
+    <button bind:this={settingsOpener} class="text-button" onclick={async () => { settings = true; await tick(); document.getElementById('account-settings-title')?.focus(); }}>{label('계정 설정', 'Account settings')}</button>
+  {/if}
 </main>
 {#if deletion}
   <Modal open={true} labelledby="delete-draft-title" onClose={() => { if (!deleting) deletion = null; }}>
@@ -74,4 +89,4 @@
     <Button disabled={deleting} onclick={() => void removeDraft()}>{deleting ? label('삭제 중…', 'Deleting…') : label('삭제 확인', 'Confirm delete')}</Button></div>
   </Modal>
 {/if}
-<style>.story-actions{display:flex;flex-wrap:wrap;gap:var(--spacing-2)}.draft-title{overflow-wrap:anywhere}.account-page li>div{min-width:0;overflow-wrap:anywhere}@media(max-width:640px){.account-page li{flex-wrap:wrap}}.account-page{display:grid;gap:var(--spacing-6)}.account-page form{max-width:100%}.account-page h2{margin-bottom:var(--spacing-4)}ul{list-style:none;padding:0}li{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-4);border-bottom:var(--border-thin) solid var(--color-festival-line);padding:var(--spacing-4) 0}li :global(.secondary),.page-heading :global(.secondary){width:auto}nav{display:flex;gap:var(--spacing-4)}</style>
+<style>.settings-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--spacing-3)}section+section{margin-top:var(--spacing-6);padding-top:var(--spacing-6);border-top:var(--border-thin) solid var(--color-festival-line)}section p{margin:var(--spacing-4) 0}.story-actions{display:flex;flex-wrap:wrap;gap:var(--spacing-2)}.draft-title{overflow-wrap:anywhere}.account-page li>div{min-width:0;overflow-wrap:anywhere}@media(max-width:640px){.account-page li{flex-wrap:wrap}}.account-page{display:grid;gap:var(--spacing-6)}.account-page form{max-width:100%}.account-page h2{margin-bottom:var(--spacing-4)}ul{list-style:none;padding:0}li{display:flex;align-items:center;justify-content:space-between;gap:var(--spacing-4);border-bottom:var(--border-thin) solid var(--color-festival-line);padding:var(--spacing-4) 0}li :global(.secondary),.page-heading :global(.secondary){width:auto}nav{display:flex;gap:var(--spacing-4)}</style>

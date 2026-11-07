@@ -1,0 +1,17 @@
+{
+  "base": "0fd297fb335171d299f07a41ca3efb2e2393b57a",
+  "testedCommit": "d92e4a685ade16daee27c8978c0691c4c7073942",
+  "contexts": 3,
+  "availableRoomVisible": true,
+  "availableRoomVisibleInUI": true,
+  "fullRoomHidden": true,
+  "fullRoomHiddenInUI": true,
+  "vacancyRestoresListing": true,
+  "vacancyRestoresListingInUI": true,
+  "refilledRoomHidden": true,
+  "refilledRoomHiddenInUI": true,
+  "playingRoomHidden": true,
+  "playingRoomHiddenInUI": true,
+  "hostRoomStatus": "playing",
+  "pageErrors": 0
+}

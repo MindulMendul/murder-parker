@@ -50,7 +50,7 @@
         {
           "title": "1. 처리 항목과 목적",
           "paragraphs": [
-            "게스트 로그인 시 입력한 닉네임, 생성된 게스트 ID 및 인증 토큰의 해시·만료 시각을 저장해 로그인과 접근 권한을 확인합니다. 실명·이메일·비밀번호를 입력하는 회원 가입은 제공하지 않습니다.",
+            "게스트 로그인 시 입력한 닉네임, 생성된 게스트 ID 및 인증 토큰의 해시·만료 시각을 저장해 로그인과 접근 권한을 확인합니다. Google 로그인 시 Google에서 계정 고유 식별자(subject, sub)를 받아 서비스 계정 ID와 영속적으로 연결합니다. 이 연결로 다시 로그인할 때 같은 닉네임·작품·즐겨찾기에 접근합니다. Google에 요청하는 범위는 openid이며 실명·이메일·비밀번호를 수집하는 회원 가입 양식은 제공하지 않습니다.",
             "방과 참가자, 역할·선택 등 게임 진행 상태, 솔로 플레이의 실행 ID·진행·결과·평점·이벤트 시각을 저장해 게임을 제공하고 작품 품질을 살펴봅니다. 창작마당에는 게스트 ID와 연결된 초안·공개 작품·메타데이터·즐겨찾기를 저장합니다. 닉네임과 공개 작품 정보는 해당 기능을 이용하는 다른 사람에게 표시될 수 있습니다."
           ]
         },
@@ -71,7 +71,7 @@
         {
           "title": "4. 보관과 삭제",
           "paragraphs": [
-            "게스트 인증의 유효기간은 30일입니다. 현재 앱에는 게스트·게임·창작마당 기록 전체에 대한 자동 삭제 기한이 구현되어 있지 않아 쿠키 만료 후에도 서버에 남을 수 있습니다. 운영자에게 열람·정정·삭제 또는 처리 정지를 요청할 수 있으며 본인 확인과 다른 이용자의 권리를 검토해 처리합니다.",
+            "로그인 인증의 유효기간은 30일입니다. 게스트가 앱에서 로그아웃하면 해당 닉네임·작품·즐겨찾기와 모든 인증 세션을 삭제합니다. Google 계정의 로그아웃은 모든 인증 세션을 삭제하지만 subject와 계정 ID의 연결, 닉네임·작품·즐겨찾기는 다음 로그인을 위해 보관합니다. 계정 설정에서 회원탈퇴를 확인하면 닉네임, Google 연결, 만든 작품, 즐겨찾기와 인증 세션을 삭제합니다. Google 계정 자체는 삭제되지 않으며 완료된 게임 기록과 익명 집계 통계는 남을 수 있습니다. 로그아웃이나 쿠키 만료만으로 Google 계정 및 계정·게임 기록 전체가 삭제되지는 않습니다. 운영자에게 열람·정정·삭제 또는 처리 정지를 요청할 수 있으며 본인 확인과 다른 이용자의 권리를 검토해 처리합니다.",
             "처리 목적이 끝났거나 유효한 삭제 요청을 처리할 때에는 해당 정보를 삭제 또는 익명화합니다. 법령상 보존이 필요한 경우에는 그 사유와 범위를 안내합니다. 외부 분석·호스팅 시스템의 보관 기간은 각 서비스 설정과 정책에 따릅니다."
           ]
         },
@@ -143,7 +143,7 @@
         {
           "title": "1. Information and purposes",
           "paragraphs": [
-            "Guest sign-in stores your nickname, generated guest ID, and a hash and expiry time for the authentication token to provide access and check permissions. There is no registration form for a real name, email address or password.",
+            "Guest sign-in stores your nickname, generated guest ID, and a hash and expiry time for the authentication token to provide access and check permissions. Google sign-in obtains the unique Google account identifier (subject, sub) and persistently links it to a service account ID, so subsequent sign-ins restore the same nickname, stories and favorites. The requested Google scope is openid; no registration form collects a real name, email address or password.",
             "Rooms, participants, roles, choices and other game state, plus solo run IDs, progress, outcomes, ratings and event times, are stored to provide games and understand story quality. The workshop stores drafts, published stories, metadata and favorites linked to a guest ID. Your nickname and published story information may be visible to others using those features."
           ]
         },
@@ -164,7 +164,7 @@
         {
           "title": "4. Retention and deletion",
           "paragraphs": [
-            "Guest credentials are valid for 30 days. The app currently has no automatic deletion deadline for all guest, game and workshop records, so these may remain on the server after cookie expiry. You can request access, correction, deletion or restriction of processing; the operator will review identity verification and other users' rights when handling requests.",
+            "Sign-in credentials are valid for 30 days. Signing out of a guest account in the app deletes its nickname, stories, favorites and all authentication sessions. Signing out of a Google account deletes all authentication sessions but retains the subject-to-account link, nickname, stories and favorites for the next sign-in. Confirming account deletion in account settings deletes the nickname, Google link, created stories, favorites and authentication sessions. It does not delete the Google account itself; completed game records and anonymous aggregate statistics may remain. Signing out or cookie expiry alone does not delete the Google account link or all account and game records. You can also request access, correction, deletion or restriction of processing; the operator will review identity verification and other users' rights when handling requests.",
             "When the purpose ends or a valid deletion request is processed, the relevant information is deleted or anonymized. Where legal retention is required, its reason and scope will be explained. Retention in external analytics and hosting systems depends on their settings and policies."
           ]
         },

@@ -24,6 +24,8 @@
     { key: 'mine', ko: '내가 만든 목록', en: 'My stories', sort: 'latest' },
   ];
   let tab = $state('all');
+  const filters = $derived({ q: query.trim(), author: author.trim(), mode, difficulty, ratingMin, playsMin, favoritesMin, publishedAfter });
+  const activeFilterCount = $derived(Object.values(filters).filter(Boolean).length);
   async function load(nextOffset = 0) {
     if (disposed) return;
     pendingOffset = nextOffset;
@@ -31,7 +33,7 @@
     loading = true; error = '';
     try {
       const params = new URLSearchParams({ view, sort, limit: String(pageSize), offset: String(nextOffset) });
-      for (const [key, value] of Object.entries({ q: query.trim(), author: author.trim(), mode, difficulty, ratingMin, playsMin, favoritesMin, publishedAfter })) {
+      for (const [key, value] of Object.entries(filters)) {
         if (value) params.set(key, value);
       }
       const data = await workshopRequest(`/stories?${params}`);
@@ -96,7 +98,12 @@
   <nav class="tabs" aria-label={label('창작 머미 목록', 'Story collections')}>
     {#each tabs as item}<button class="tab" class:active={tab === item.key} aria-pressed={tab === item.key} onclick={() => chooseTab(item)}>{label(item.ko, item.en)}</button>{/each}
   </nav>
-  <FilterBar label={label('작품 필터', 'Story filters')}>
+  <details class="filter-disclosure">
+    <summary>
+      <span class="filter-title">{label('작품 필터', 'Story filters')}<span aria-live="polite" aria-atomic="true">{#if activeFilterCount}<span class="filter-count" aria-label={label(`적용 중인 필터 ${activeFilterCount}개`, `${activeFilterCount} active filters`)}>{activeFilterCount}</span>{/if}</span></span>
+      <span class="filter-hint">{label('원하는 이야기를 찾아보세요', 'Find a story for you')} <span class="filter-chevron" aria-hidden="true">⌄</span></span>
+    </summary>
+  <FilterBar label={label('작품 필터', 'Story filters')} class="workshop-filters">
     <label>{label('제목·설명', 'Title / description')}<TextInput type="search" maxlength={100} bind:value={query} oninput={schedule} placeholder={label('어떤 이야기를 찾으세요?', 'Find your next story')}  /></label>
     <label>{label('만든 이', 'Creator')}<TextInput type="search" maxlength={100} bind:value={author} oninput={schedule} placeholder={label('제작자 이름', 'Creator name')}  /></label>
     <label>{label('평점', 'Rating')}<Select bind:value={ratingMin} onchange={refresh}><option value="">{label('전체 평점', 'Any rating')}</option>{#each [1,2,3,4,5] as rating}<option value={String(rating)}>{rating} ★ {label('이상', 'and up')}</option>{/each}</Select></label>
@@ -108,6 +115,7 @@
     <label>{label('정렬', 'Sort by')}<Select bind:value={sort} onchange={refresh}><option value="latest">{label('최신 순', 'Newest')}</option><option value="rating">{label('최고 평점', 'Top rated')}</option><option value="plays">{label('플레이 횟수', 'Most played')}</option><option value="favorites">{label('즐겨찾기 수', 'Most favorited')}</option><option value="title">{label('제목 순', 'Title')}</option></Select></label>
     <Button class="secondary reset" onclick={reset} variant="secondary">{label('필터 초기화', 'Reset filters')}</Button>
   </FilterBar>
+  </details>
   <div class="results"><span class="muted" aria-live="polite">{label('작품', 'Stories')} {total}</span>{#if !loggedIn}<span class="muted">{label('로그인하면 창작과 즐겨찾기를 이용할 수 있어요.', 'Sign in to create stories and save favorites.')}</span>{/if}</div>
   {#if error}<div class="panel notice" role="alert"><p>{error}</p><Button class="secondary" onclick={() => void load(pendingOffset)} variant="secondary">{label('다시 시도', 'Retry')}</Button></div>{/if}
   {#if loading}<StateMessage kind="loading" message={label('이야기를 불러오는 중…', 'Loading stories…')} />
@@ -135,6 +143,43 @@
 .workshop :global(.primary),.workshop :global(.secondary),:global(.story-dialog) :global(.primary),:global(.story-dialog) :global(.secondary) {
   width:auto;
   margin-top:0}
+.filter-disclosure {
+  border:var(--border-thin) solid var(--color-workshop-line);
+  background:var(--color-workshop-thumbnail)}
+.filter-disclosure summary {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:var(--spacing-3);
+  padding:var(--spacing-4) var(--spacing-5);
+  cursor:pointer;
+  list-style:none}
+.filter-disclosure summary::-webkit-details-marker { display:none }
+.filter-disclosure summary:focus-visible {
+  outline:2px solid var(--color-workshop-accent);
+  outline-offset:3px}
+.filter-title,.filter-hint {
+  display:flex;
+  align-items:center;
+  gap:var(--spacing-3)}
+.filter-title { color:var(--color-workshop-accent-text) }
+.filter-count {
+  border-radius:var(--spacing-4);
+  padding:0 var(--spacing-2);
+  background:var(--color-workshop-selected);
+  color:var(--color-workshop-accent);
+  font-size:var(--typography-size-body-sm)}
+.filter-hint {
+  color:var(--color-workshop-muted);
+  font-size:var(--typography-size-body-sm)}
+.filter-chevron { display:inline-block }
+.filter-disclosure[open] .filter-chevron { transform:rotate(180deg) }
+.workshop :global(.workshop-filters) {
+  border:0;
+  border-top:var(--border-thin) solid var(--color-workshop-line);
+  background:transparent;
+  margin:0}
 .tabs {
   display:flex;
   flex-wrap:wrap;

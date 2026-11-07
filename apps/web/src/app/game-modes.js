@@ -4,12 +4,6 @@
  */
 export const gameModes = [
   {
-    id: "solo",
-    titleKey: "soloLabel",
-    descriptionKey: "soloDescription",
-    actionKey: "soloPlay",
-  },
-  {
     id: "host",
     titleKey: "hostModeTitle",
     descriptionKey: "hostModeDescription",

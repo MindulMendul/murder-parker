@@ -6,8 +6,8 @@ export function shareImage(en: boolean, origin: string) {
     width: '1200', height: '630', type: 'image/png',
   };
 }
-export function siteOrigin(value = 'https://mindul-murder-mystery.duckdns.org') {
-  const url = new URL(value);
+export function siteOrigin(value?: string) {
+  const url = new URL(value || 'https://mindul-murder-mystery.duckdns.org');
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw Error('PUBLIC_SITE_URL must be an HTTP(S) origin.');
   return url.origin;
 }

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" fill="none">
+  <defs>
+    <radialGradient id="paper" cx="0" cy="0" r="1" gradientTransform="translate(320 120) rotate(90) scale(270 430)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#344239"/><stop offset="1" stop-color="#171d19"/>
+    </radialGradient>
+    <linearGradient id="envelope" x1="180" y1="150" x2="450" y2="300" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38483c"/><stop offset="1" stop-color="#232e26"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#paper)" d="M0 0h640v360H0z"/>
+  <path stroke="#d9bd76" stroke-opacity=".15" d="M24 24h592v312H24zM32 32h576v296H32z"/>
+  <path fill="#202a23" stroke="#d9bd76" stroke-opacity=".55" d="m178 172 142-89 142 89v125H178z"/>
+  <path fill="#d9bd76" fill-opacity=".09" stroke="#d9bd76" stroke-opacity=".45" d="M219 104h202v153H219z"/>
+  <path stroke="#d9bd76" stroke-opacity=".5" d="M249 133h142m-126 17h110m-106 17h102"/>
+  <path fill="url(#envelope)" stroke="#d9bd76" stroke-opacity=".6" d="m178 172 142 89 142-89v125H178z"/>
+  <path stroke="#d9bd76" stroke-opacity=".35" d="m178 297 106-72m178 72-106-72"/>
+  <circle cx="320" cy="244" r="24" fill="#b89a58"/>
+  <circle cx="320" cy="244" r="18" stroke="#243027" stroke-opacity=".5"/>
+  <path fill="#243027" d="m320 231 3 10 10 3-10 3-3 10-3-10-10-3 10-3z"/>
+  <path stroke="#d9bd76" stroke-opacity=".45" d="M95 173h28m-14-14v28m408 24h28m-14-14v28"/>
+</svg>

@@ -8,7 +8,7 @@
   import { onMount, tick } from "svelte";
   import type { Command, ServerEvent, Snapshot } from "@festival/shared";
   import { SoloGame } from "../pages/solo";
-  import { gameModes } from "./game-modes.js";
+  import { clearSoloExit, matchesSoloExit, pendingSoloExit, type SoloExit } from "../shared/lib/solo-lifecycle";
   import { getLocaleFromPath, localePath, translate } from "../shared/lib";
 
   import { EntryPage } from "../pages/entry";
@@ -32,12 +32,16 @@
   let busy = $state(false);
   let connected = $state(false);
   let loading = $state(true);
+  let accountLoaded = false;
+  let soloRecovery = $state<SoloExit | null>(null);
+  let ownedSoloPlayId = $state<string | null>(null);
+  let soloStartRequest: { requestId: string; roomId: string } | null = null;
+  let soloEndedNotice = $state(false);
   let picker = $state(false);
   let copied = $state(false);
   let locale = $state<"ko" | "en">(getLocaleFromPath(location.pathname));
   const pagePath = (pathname: string) => pathname.replace(/^\/en(?=\/|$)/, "").replace(/\/+$/, "") || "/";
   let currentPath = $state(pagePath(location.pathname));
-  let soloActive = $state(false);
   let loginDialog = $state<HTMLDialogElement>(undefined!);
   let pendingWorkshopAction: (() => void) | undefined;
   type AuthDestination = { page: "workshop" | "editor" | "account"; id?: string };
@@ -100,7 +104,17 @@
         const event = JSON.parse(message.data) as ServerEvent;
         if (event.type === "snapshot") {
           snapshot = event.data;
+          if (ownedSoloPlayId !== snapshot.room?.soloPlayId) ownedSoloPlayId = null;
+          if (soloRecovery && !matchesSoloExit(soloRecovery, snapshot.room)) {
+            clearSoloExit(sessionStorage, soloRecovery);
+            soloRecovery = null;
+            soloEndedNotice = !snapshot.room?.soloStarted;
+          }
         } else {
+          if (soloStartRequest && soloStartRequest.requestId === event.requestId) {
+            if (event.type === "ack" && snapshot?.room?.id === soloStartRequest.roomId && snapshot.room.soloStarted) ownedSoloPlayId = snapshot.room.soloPlayId;
+            soloStartRequest = null;
+          }
           if (event.requestId) {
             clearTimeout(pending.get(event.requestId));
             pending.delete(event.requestId);
@@ -116,6 +130,7 @@
       connected = false;
       for (const timeout of pending.values()) clearTimeout(timeout);
       pending.clear();
+      soloStartRequest = null;
       busy = false;
       if (!disposed) {
         reconnectTimer = setTimeout(async () => {
@@ -138,20 +153,23 @@
     };
   }
 
-  function command(type: Command["type"], targetId?: string) {
+  function command(type: Command["type"], targetId?: string, mode?: "solo" | "multiplayer") {
     if (!connected || busy || !socket) return;
+    if (type === "start") soloEndedNotice = false;
     error = "";
     busy = true;
     const requestId = crypto.randomUUID();
+    if (type === "start" && room?.mode === "solo") soloStartRequest = { requestId, roomId: room.id };
     pending.set(
       requestId,
       setTimeout(() => {
         pending.delete(requestId);
         busy = false;
+        if (soloStartRequest?.requestId === requestId) soloStartRequest = null;
         error = "응답이 지연됐어. 현재 상태를 확인하고 다시 시도해 줘.";
       }, 8000),
     );
-    socket.send(JSON.stringify({ type, requestId, ...(targetId ? { targetId } : {}) }));
+    socket.send(JSON.stringify({ type, requestId, ...(targetId ? { targetId } : {}), ...(mode ? { mode } : {}) }));
   }
 
   function changeLocale(next: "ko" | "en") {
@@ -189,13 +207,7 @@
     history.replaceState({}, "", `${localePath(locale, "/workshop/editor")}?id=${encodeURIComponent(id)}`);
   }
 
-  function startSolo() {
-    if (!snapshot) return;
-    soloActive = true;
-  }
-
   function selectGameMode(modeId: string) {
-    if (modeId === "solo") startSolo();
     if (modeId === "host") picker = true;
   }
 
@@ -203,9 +215,28 @@
     account = await api("/platform/account");
     if (account.me && !account.needsNickname) {
       snapshot = await api("/lobby/state");
+      if (!accountLoaded) {
+        soloRecovery = pendingSoloExit(sessionStorage, snapshot?.room ?? null);
+        if (soloRecovery) await reconcileSolo();
+      }
+      accountLoaded = true;
       if (!socket || socket.readyState > 1) connect();
       resumeGoogleAction();
     }
+  }
+  async function reconcileSolo() {
+    if (!soloRecovery) return;
+    const exit = soloRecovery;
+    await api("/lobby/rooms/solo-exit", exit);
+    snapshot = await api("/lobby/state");
+    clearSoloExit(sessionStorage, exit);
+    soloRecovery = null;
+    soloEndedNotice = true;
+  }
+  function soloPageExited(exit: SoloExit) {
+    ownedSoloPlayId = null;
+    if (matchesSoloExit(exit, snapshot?.room ?? null)) soloRecovery = exit;
+    else clearSoloExit(sessionStorage, exit);
   }
   function openAccount() {
     if (editorPath && editorHasChanges && !window.confirm(locale === 'en' ? 'Discard unsaved changes?' : '저장하지 않은 변경을 버리고 나갈까요?')) return;
@@ -249,9 +280,9 @@
   async function rename(next: string) {
     await action(async () => { account = await api("/platform/account/nickname", { nickname: next }); await loadAccount(); });
   }
-  async function logout() {
+  async function logout(remove = false) {
     await action(async () => {
-      await api("/platform/account/logout", {});
+      await api(remove ? "/platform/account/delete" : "/platform/account/logout", {});
       sessionStorage.removeItem("festival_auth_return");
       if (socket) { socket.onclose = null; socket.close(); }
       clearTimeout(reconnectTimer);
@@ -303,6 +334,7 @@
       if (loginDialog?.open) loginDialog.close();
       locale = getLocaleFromPath(location.pathname);
       currentPath = pagePath(location.pathname);
+      code = new URLSearchParams(location.search).get("room") ?? "";
       editorId = new URLSearchParams(location.search).get("id") ?? undefined;
       document.documentElement.lang = locale;
     };
@@ -346,21 +378,28 @@
   {#if error}
     <ErrorNotice message={error} onDismiss={() => (error = "")} />
   {/if}
+  {#if soloEndedNotice}
+    <p class="main" role="status">{locale === "en" ? "Your previous solo investigation ended when you left the page. You are back in the room; start a new investigation when ready." : "페이지를 떠나 이전 1인 수사가 종료됐어. 같은 방으로 돌아왔으니 준비되면 새 수사를 시작해 줘."}</p>
+  {/if}
 
   {#if loading}
     <PageState kind="loading" message={t("workshopLoading")} />
+  {:else if soloRecovery && snapshot}
+    <main class="main"><Panel><p role="status">{locale === "en" ? "The previous solo investigation has ended. Reconnect to return to your room." : "이전 1인 수사가 종료됐어. 연결을 확인한 뒤 같은 방으로 돌아가 줘."}</p><Button disabled={busy} onclick={() => void action(async () => { await reconcileSolo(); if (!socket || socket.readyState > 1) connect(); })}>{locale === "en" ? "Retry returning to room" : "방 복귀 다시 시도"}</Button></Panel></main>
   {:else if account.needsNickname}
     <main class="main"><Panel><h1 class="heading-one">{locale === "en" ? "Choose your nickname" : "닉네임을 정해 주세요"}</h1><form onsubmit={event => { event.preventDefault(); void rename(nickname); }}><NicknameField bind:value={nickname} {locale} {busy} /><Button type="submit" disabled={busy}>{locale === "en" ? "Save and continue" : "저장하고 시작하기"}</Button></form><Button variant="secondary" disabled={busy} onclick={() => void logout()}>{locale === "en" ? "Sign out" : "로그아웃"}</Button></Panel></main>
   {:else if currentPath === "/mypage" && snapshot}
-    <MyPage me={snapshot.me} accountType={account.accountType} {locale} {busy} onRename={rename} onLogout={logout} onEdit={openEditor} onWorkshop={openWorkshop} />
+    <MyPage me={snapshot.me} accountType={account.accountType} {locale} {busy} onRename={rename} onLogout={() => logout()} onDeleteAccount={() => logout(true)} onEdit={openEditor} onWorkshop={openWorkshop} />
   {:else if currentPath === "/workshop"}
     <WorkshopPage {locale} loggedIn={snapshot !== null} onLogin={requestWorkshopLogin} onEdit={(id) => id ? openEditor(id) : createWorkshopStory()} />
   {:else if editorPath && snapshot}
     {#key editorId}<WorkshopEditor {locale} onDirtyChange={(dirty) => { editorHasChanges = dirty; }} storyId={editorId} onBack={openWorkshop} onSaved={savedWorkshopStory} />{/key}
   {:else if !snapshot}
     <EntryPage bind:nickname {busy} {t} {locale} demo={authConfig.demo} onGoogle={googleLogin} onLogin={login} />
-  {:else if soloActive}
-    <main class="main"><SoloGame {locale} onExit={() => (soloActive = false)} /></main>
+  {:else if room?.soloStarted && ownedSoloPlayId !== room.soloPlayId}
+    <main class="main"><Panel><p role="status">{locale === "en" ? "A solo investigation is open in another page. Return to that page to continue. Ending it here also closes that investigation." : "다른 페이지에서 1인 수사가 열려 있어. 수사를 이어가려면 해당 페이지로 돌아가 줘. 여기서 종료하면 그 수사도 끝나."}</p><Button disabled={busy || !connected} onclick={() => command("solo-return")}>{locale === "en" ? "End investigation and return to room" : "수사 종료하고 방으로 돌아가기"}</Button></Panel></main>
+  {:else if room?.soloStarted}
+    {#key room.soloPlayId}<main class="main"><SoloGame {locale} storyId={room.soloStory.id} roomLifecycle={{ roomId: room.id, soloPlayId: room.soloPlayId }} onLifecycleExit={soloPageExited} exitDisabled={!connected || busy} exitMessage={!connected ? (locale === "en" ? "Reconnecting. Return to the room when the connection is restored." : "재연결 중이야. 연결이 복구되면 방으로 돌아갈 수 있어.") : busy ? (locale === "en" ? "Returning to the room…" : "방으로 돌아가는 중…") : ""} exitLabel={locale === "en" ? "Return to room" : "방으로 돌아가기"} onExit={() => command("solo-return")} /></main>{/key}
   {:else if !room}
     <LobbyPage
       bind:code
@@ -368,8 +407,8 @@
       {busy}
       {connected}
       {t}
-      modes={gameModes}
       onSelectMode={selectGameMode}
+      onCreate={create}
       onJoin={join}
     />
   {:else if !session}
@@ -381,6 +420,8 @@
       {busy}
       {connected}
       {copied}
+      {locale}
+      onMode={(mode) => command("mode", undefined, mode)}
       onCopy={copyInviteLink}
       onCommand={command}
     />
